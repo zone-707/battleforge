@@ -225,12 +225,13 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;touch-action:no
       <div id="timer-display">05:00</div>
       <button id="pause-btn" onclick="pauseGame()">⏸ หยุด</button>
     </div>
-    <div style="text-align:right">
-      <div class="hlabel">🏆 SCORE</div>
+    <div style="text-align:right;display:flex;flex-direction:column;gap:2px;">
+      <div class="hlabel" id="gems-hud" style="color:#00eeff;font-size:8px;cursor:pointer;" onclick="openShop()" ontouchstart="openShop()">💎 0</div>
+      <div class="hlabel">🏆</div>
       <div class="score-num" id="scoreVal">0</div>
     </div>
   </div>
-  <canvas id="gameCanvas"></canvas>
+  <canvas id="gameCanvas" style="background:#06021a;"></canvas>
   <div id="wbar">
     <div class="ws active" id="ws0" ontouchstart="selWp(0)" onclick="selWp(0)">🗡️<div class="wn">ดาบไม้</div></div>
     <div class="ws" id="ws1" ontouchstart="selWp(1)" onclick="selWp(1)">⚔️<div class="wn">ดาบเหล็ก</div></div>
@@ -282,14 +283,15 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;touch-action:no
 <!-- MAIN MENU -->
 <div class="modal show" id="menuModal">
   <h1>⚔️ BATTLEFORGE</h1>
-  <p>เลือกแผนที่</p>
+  <p id="menu-subtitle">เลือกแผนที่</p>
+
   <div id="map-select">
-    <div class="map-btn sel" id="mb0" onclick="selMap(0)">🌌<br>ปราสาทม่วง</div>
-    <div class="map-btn" id="mb1" onclick="selMap(1)">🌋<br>ถ้ำไฟ</div>
-    <div class="map-btn" id="mb2" onclick="selMap(2)">🌊<br>ใต้น้ำ</div>
+    <div class="map-btn sel" id="mb0" onclick="selMap(0)">🌌<br>ปราสาทม่วง<br><span style="color:#5c3aff">คลาสสิก</span></div>
+    <div class="map-btn" id="mb1" onclick="selMap(1)">🌋<br>ถ้ำไฟ<br><span style="color:#ff6b35">ร้อนแรง</span></div>
+    <div class="map-btn" id="mb2" onclick="selMap(2)">🌊<br>ใต้น้ำ<br><span style="color:#00aaff">เย็นชา</span></div>
   </div>
-  <!-- Difficulty -->
-  <div class="cplabel" style="color:#ffcc02;font-size:6px;">⚔️ ระดับความยาก</div>
+
+  <div class="cplabel diff-label" style="color:#ffcc02;font-size:6px;">⚔️ ระดับความยาก</div>
   <div id="diff-select">
     <div class="diff-btn sel" id="d0" onclick="selDiff(0)">😊<br>ง่าย<br><span style="color:#00cc66">×0.5</span></div>
     <div class="diff-btn" id="d1" onclick="selDiff(1)">😐<br>ปกติ<br><span style="color:#5c3aff">×1.0</span></div>
@@ -299,22 +301,17 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;touch-action:no
   </div>
   <div id="diff-badge" style="color:#00ff88">ง่าย — ดาเมจที่รับ ×0.5</div>
 
-  <!-- Custom mode -->
   <div id="custom-panel">
+    <div class="cprow"><div class="cplabel" id="cp-custom-label">⚙️ โหมดกำหนดเอง</div></div>
     <div class="cprow">
-      <div class="cplabel">⚙️ โหมดกำหนดเอง</div>
-    </div>
-    <div class="cprow">
-      <div class="cplabel">⏱ เวลา (นาที)</div>
+      <div class="cplabel" id="cp-time-label">⏱ เวลา (นาที)</div>
       <div style="display:flex;align-items:center;gap:6px;">
         <button class="cpbtn" onclick="adjTime(-1)">−</button>
         <div class="cpnum" id="cpTime">5</div>
         <button class="cpbtn" onclick="adjTime(1)">+</button>
       </div>
     </div>
-    <div class="cprow">
-      <div class="cplabel">เสกมอนสเตอร์</div>
-    </div>
+    <div class="cprow"><div class="cplabel" id="cp-spawn-label">เสกมอนสเตอร์</div></div>
     <div class="spawn-btns">
       <div class="spwbtn" id="spw-goblin" onclick="queueSpawn('goblin')">👺 กอบลิน</div>
       <div class="spwbtn" id="spw-skeleton" onclick="queueSpawn('skeleton')">💀 สเกเลตัน</div>
@@ -328,12 +325,62 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;touch-action:no
   </div>
   <div class="mbtns">
     <button class="mbtn primary" onclick="startGame()" ontouchstart="startGame()">▶ เริ่มเกม</button>
+    <button class="mbtn" onclick="openShop()" ontouchstart="openShop()" style="background:rgba(0,200,255,0.15);border-color:#00ccff;color:#00eeff;" id="shop-btn">🛒 ร้านค้า</button>
+    <button class="mbtn" onclick="openSettings()" ontouchstart="openSettings()" style="background:rgba(92,58,255,0.2);border-color:#5c3aff;color:#9c7cff;">⚙️ ตั้งค่า</button>
+    <button class="mbtn" onclick="openStats()" ontouchstart="openStats()" style="background:rgba(255,204,0,0.15);border-color:#ffcc02;color:#ffcc02;">🏆 สถิติ</button>
   </div>
 </div>
 
-<!-- PAUSE MENU -->
+<!-- SETTINGS MODAL -->
+<div class="modal" id="settingsModal">
+  <h1 id="settings-title">⚙️ ตั้งค่า</h1>
+  <div style="display:flex;flex-direction:column;gap:10px;align-items:center;width:100%;">
+    <div class="cplabel" id="settings-lang-label" style="color:#ffcc02;">🌐 ภาษา / Language</div>
+    <div style="display:flex;gap:8px;">
+      <div class="diff-btn sel" id="lang-th" onclick="setLang('th')" ontouchstart="setLang('th')" style="padding:8px 16px;font-size:7px;border-color:#ffcc02;color:#ffcc02;">🇹🇭 ไทย</div>
+      <div class="diff-btn" id="lang-en" onclick="setLang('en')" ontouchstart="setLang('en')" style="padding:8px 16px;font-size:7px;border-color:#7c5cff;color:#9c7cff;">🇬🇧 English</div>
+    </div>
+    <div class="cplabel" style="color:#00eeff;margin-top:4px;">🕹️ ปุ่มควบคุม</div>
+    <div style="display:flex;gap:8px;">
+      <div class="diff-btn sel" id="ctrl-joystick" onclick="setCtrl('joystick')" ontouchstart="setCtrl('joystick')" style="padding:8px 12px;font-size:6px;border-color:#00eeff;color:#00eeff;text-align:center;">🕹️<br>Joystick<br>วงกลม</div>
+      <div class="diff-btn" id="ctrl-dpad" onclick="setCtrl('dpad')" ontouchstart="setCtrl('dpad')" style="padding:8px 12px;font-size:6px;border-color:#7c5cff;color:#9c7cff;text-align:center;">◀▶<br>D-Pad<br>ลูกศร</div>
+    </div>
+  </div>
+  <div class="mbtns">
+    <button class="mbtn primary" onclick="closeSettings()" ontouchstart="closeSettings()" id="settings-close">✅ บันทึก</button>
+  </div>
+</div>
+
+<!-- STATS MODAL -->
+<div class="modal" id="statsModal">
+  <h1 id="stats-title">🏆 สถิติ</h1>
+  <div id="stats-content" style="width:100%;display:flex;flex-direction:column;gap:6px;"></div>
+  <div class="mbtns">
+    <button class="mbtn" onclick="clearStats()" ontouchstart="clearStats()" style="background:rgba(255,40,40,0.15);border-color:#ff4040;color:#ff6060;" id="stats-clear">🗑️ ล้างสถิติ</button>
+    <button class="mbtn primary" onclick="closeStats()" ontouchstart="closeStats()" id="stats-close">✅ ปิด</button>
+  </div>
+</div>
+
+<!-- D-PAD (hidden by default) -->
+<div id="dpad-ui" style="display:none;position:fixed;left:10px;bottom:70px;z-index:20;pointer-events:all;">
+  <div style="display:grid;grid-template-columns:44px 44px 44px;grid-template-rows:44px 44px;gap:4px;">
+    <div></div>
+    <div class="abtn" id="dpad-up" style="background:rgba(92,58,255,0.2);border:2px solid #5c3aff;color:#9c7cff;font-size:18px;" ontouchstart="dpadStart('up')" ontouchend="dpadEnd('up')">▲</div>
+    <div></div>
+    <div class="abtn" id="dpad-left" style="background:rgba(92,58,255,0.2);border:2px solid #5c3aff;color:#9c7cff;font-size:18px;" ontouchstart="dpadStart('left')" ontouchend="dpadEnd('left')">◀</div>
+    <div></div>
+    <div class="abtn" id="dpad-right" style="background:rgba(92,58,255,0.2);border:2px solid #5c3aff;color:#9c7cff;font-size:18px;" ontouchstart="dpadStart('right')" ontouchend="dpadEnd('right')">▶</div>
+  </div>
+</div>
+<div class="modal" id="shopModal">
+  <h1 id="shop-title">🛒 ร้านค้า</h1>
+  <div id="shop-content" style="width:100%;max-height:55vh;overflow-y:auto;"></div>
+  <div class="mbtns">
+    <button class="mbtn primary" onclick="closeShop()" ontouchstart="closeShop()" id="shop-close">✅ ปิด</button>
+  </div>
+</div>
 <div class="modal" id="pauseModal">
-  <h1>⏸ หยุดเกม</h1>
+  <h1 id="pause-title">⏸ หยุดเกม</h1>
   <div class="mbtns">
     <button class="mbtn primary" onclick="resumeGame()" ontouchstart="resumeGame()">▶ เล่นต่อ</button>
     <button class="mbtn red" onclick="goMainMenu()" ontouchstart="goMainMenu()">🏠 กลับหน้าหลัก</button>
@@ -360,6 +407,13 @@ window.addEventListener('resize',resizeCanvas);
 // รอ layout พร้อมก่อน โดยเฉพาะ Android
 setTimeout(resizeCanvas,100);
 setTimeout(resizeCanvas,500);
+setTimeout(()=>{
+  applyLang();
+  updateGemsHUD();
+  updateWeaponBar();
+  ctrlType=loadCtrl();
+  setCtrl(ctrlType);
+},200);
 
 // ── Maps ────────────────────────────────────────────────────────
 let curMap=0;
@@ -384,17 +438,144 @@ const MAPS=[
 function selMap(i){curMap=i;[0,1,2].forEach(j=>document.getElementById('mb'+j).classList.toggle('sel',j===i));}
 
 // ── Weapons ─────────────────────────────────────────────────────
+// ── Language system ──────────────────────────────────────────────
+let curLang='th';
+const LANG={
+  th:{
+    startGame:'▶ เริ่มเกม',resume:'▶ เล่นต่อ',mainMenu:'🏠 กลับหน้าหลัก',
+    pause:'⏸ หยุด',pauseTitle:'⏸ หยุดเกม',settings:'⚙️ ตั้งค่า',
+    selectMap:'เลือกแผนที่ก่อนเริ่มเกม!',
+    map0:'🌌 ปราสาทม่วง',map1:'🌋 ถ้ำไฟ',map2:'🌊 เมืองใต้น้ำ',
+    mapSub0:'คลาสสิก',mapSub1:'ร้อนแรง',mapSub2:'เย็นชา',
+    difficulty:'⚔️ ระดับความยาก',
+    d0:'😊 ง่าย',d1:'😐 ปกติ',d2:'😤 ยาก',d3:'😰 ยากมาก',d4:'💀 นรกแตก',
+    hp:'❤️ HP',armor:'🛡️ เกราะ',score:'🏆 คะแนน',
+    jump:'กระโดด',attack:'ตี',dodge:'💨 แดช/หลบ',
+    customMode:'🎮 โหมดกำหนดเอง',spawnMon:'เสกมอนสเตอร์',time:'⏱ เวลา (นาที)',
+    won:'🏆 ชนะ!',lost:'💀 แพ้แล้ว!',
+    wonMsg:'เอาชีวิตรอดได้!',lostMsg:'พลังชีวิตหมด...',
+    bossName:'👹 อสูรปีศาจ',bossComing:'👹 บอสปีศาจกำลังมา!',
+    bossKill:'👹 บอสพ่ายแพ้! +200',
+    language:'🌐 ภาษา',
+    w0:'ดาบไม้',w1:'ดาบเหล็ก',w2:'ดาบทอง',w3:'ดาบเพชร',
+    w4:'ค้อนไม้',w5:'ค้อนเหล็ก',w6:'ค้อนทอง',w7:'ค้อนยักษ์',
+    w8:'ปืนธรรมดา',w9:'ปืนมิติ',
+    diffBadge:(l,m)=>`${l} — ดาเมจที่รับ ×${m}`,
+    queue:'คิว: ',
+    spawnList:{goblin:'👺 กอบลิน',skeleton:'💀 สเกเลตัน',mage:'🧙 เมจ',boss:'👹 บอสปีศาจ'},
+    survived:'เอาชีวิตรอดได้',died:'พลังชีวิตหมด',
+  },
+  en:{
+    startGame:'▶ Start Game',resume:'▶ Resume',mainMenu:'🏠 Main Menu',
+    pause:'⏸ Pause',pauseTitle:'⏸ Game Paused',settings:'⚙️ Settings',
+    selectMap:'Select a map to begin!',
+    map0:'🌌 Purple Castle',map1:'🌋 Fire Cave',map2:'🌊 Underwater City',
+    mapSub0:'Classic',mapSub1:'Intense',mapSub2:'Chill',
+    difficulty:'⚔️ Difficulty',
+    d0:'😊 Easy',d1:'😐 Normal',d2:'😤 Hard',d3:'😰 Very Hard',d4:'💀 Hell',
+    hp:'❤️ HP',armor:'🛡️ Armor',score:'🏆 Score',
+    jump:'Jump',attack:'Attack',dodge:'💨 Dash/Dodge',
+    customMode:'🎮 Custom Mode',spawnMon:'Spawn Monster',time:'⏱ Time (min)',
+    won:'🏆 Victory!',lost:'💀 Defeated!',
+    wonMsg:'You survived!',lostMsg:'HP depleted...',
+    bossName:'👹 Demon Lord',bossComing:'👹 Boss is coming!',
+    bossKill:'👹 Boss defeated! +200',
+    language:'🌐 Language',
+    w0:'Wood Sword',w1:'Iron Sword',w2:'Gold Sword',w3:'Diamond Sword',
+    w4:'Wood Hammer',w5:'Iron Hammer',w6:'Gold Hammer',w7:'Giant Hammer',
+    w8:'Pistol',w9:'Void Gun',
+    diffBadge:(l,m)=>`${l} — Damage taken ×${m}`,
+    queue:'Queue: ',
+    spawnList:{goblin:'👺 Goblin',skeleton:'💀 Skeleton',mage:'🧙 Mage',boss:'👹 Demon Boss'},
+    survived:'Survived',died:'HP depleted',
+  }
+};
+function T(k){return(LANG[curLang]||LANG.th)[k]||k;}
+function applyLang(){
+  const dm=[0.5,1.0,1.8,3.0,5.0];
+  // menu subtitle
+  const sub=document.getElementById('menu-subtitle');
+  if(sub)sub.textContent=T('selectMap');
+  // maps
+  ['mb0','mb1','mb2'].forEach((id,i)=>{
+    const el=document.getElementById(id);
+    if(el)el.innerHTML=`${T('map'+i)}<br><span style="color:${['#5c3aff','#ff6b35','#00aaff'][i]}">${T('mapSub'+i)}</span>`;
+  });
+  // difficulty label
+  document.querySelectorAll('.diff-label').forEach(el=>el.textContent=T('difficulty'));
+  // diff buttons
+  [0,1,2,3,4].forEach(i=>{
+    const el=document.getElementById('d'+i);
+    if(el)el.innerHTML=`${T('d'+i)}<br><span>×${dm[i]}</span>`;
+  });
+  // diff badge
+  const badge=document.getElementById('diff-badge');
+  if(badge)badge.textContent=T('diffBadge')(T('d'+curDiff),dm[curDiff]);
+  // custom mode
+  document.querySelectorAll('.cplabel').forEach(el=>{
+    if(el.textContent.includes('โหมดกำหนด')||el.textContent.includes('Custom'))el.textContent=T('customMode');
+    if(el.textContent.includes('เวลา')||el.textContent.includes('Time'))el.textContent=T('time');
+    if(el.textContent.includes('เสก')||el.textContent.includes('Spawn'))el.textContent=T('spawnMon');
+  });
+  // spawn buttons
+  const sl=T('spawnList');
+  const sg=document.getElementById('spw-goblin');   if(sg)sg.textContent=sl.goblin;
+  const ss=document.getElementById('spw-skeleton'); if(ss)ss.textContent=sl.skeleton;
+  const sm=document.getElementById('spw-mage');     if(sm)sm.textContent=sl.mage;
+  const sb=document.getElementById('spw-boss');     if(sb)sb.textContent=sl.boss;
+  // HUD
+  const labels=document.querySelectorAll('.hlabel');
+  if(labels[0])labels[0].textContent=T('hp');
+  if(labels[1])labels[1].textContent=T('armor');
+  if(labels[2])labels[2].textContent=T('score');
+  // action buttons
+  const batk=document.getElementById('btn-atk');
+  if(batk)batk.innerHTML=`<div class="cd-star" id="cd-atk"></div><div class="ico">⚔️</div>${T('attack')}`;
+  const bjmp=document.getElementById('btn-jump');
+  if(bjmp)bjmp.innerHTML=`<div class="ico">⬆️</div>${T('jump')}`;
+  const bdg=document.getElementById('btn-dodge');
+  if(bdg)bdg.innerHTML=`<div class="cd-star" id="cd-dodge"></div>${T('dodge')}`;
+  // pause button
+  const pbtn=document.getElementById('pause-btn');
+  if(pbtn)pbtn.textContent=T('pause');
+  // weapon names
+  for(let i=0;i<10;i++){
+    const el=document.querySelector(`#ws${i} .wn`);
+    if(el)el.textContent=T('w'+i);
+  }
+  // boss
+  const bn=document.getElementById('boss-name');   if(bn)bn.textContent=T('bossName');
+  const bc=document.getElementById('boss-cd-label');if(bc)bc.textContent=T('bossComing');
+  // pause modal
+  const pm=document.getElementById('pauseModal');
+  if(pm){
+    const h=pm.querySelector('h1');if(h)h.textContent=T('pauseTitle');
+    const btns=pm.querySelectorAll('.mbtn');
+    if(btns[0])btns[0].textContent=T('resume');
+    if(btns[1])btns[1].textContent=T('mainMenu');
+  }
+  // start button
+  const startBtnEl=document.querySelector('#menuModal .mbtn.primary');
+  if(startBtnEl&&!gameRunning)startBtnEl.textContent=T('startGame');
+  // lang buttons highlight
+  const lth=document.getElementById('lang-th');
+  const len=document.getElementById('lang-en');
+  if(lth)lth.classList.toggle('sel',curLang==='th');
+  if(len)len.classList.toggle('sel',curLang==='en');
+}
+function setLang(l){curLang=l;applyLang();}
+
 const WEAPONS=[
-  {name:'ดาบไม้',   type:'sword', dmg:15,range:65, cdMax:400,color:'#c8860a',kb:6},
-  {name:'ดาบเหล็ก', type:'sword', dmg:26,range:72, cdMax:340,color:'#cccccc',kb:7},
-  {name:'ดาบทอง',   type:'sword', dmg:40,range:80, cdMax:285,color:'#FFD700',kb:8},
-  {name:'ดาบเพชร',  type:'sword', dmg:58,range:90, cdMax:235,color:'#00eeff',kb:9},
-  {name:'ค้อนไม้',  type:'hammer',dmg:24,range:58, cdMax:620,color:'#c8860a',kb:13},
-  {name:'ค้อนเหล็ก',type:'hammer',dmg:40,range:65, cdMax:560,color:'#cccccc',kb:17},
-  {name:'ค้อนทอง',  type:'hammer',dmg:56,range:72, cdMax:510,color:'#FFD700',kb:22},
-  {name:'ค้อนยักษ์',type:'hammer',dmg:78,range:82, cdMax:730,color:'#ff6b35',kb:30},
-  {name:'ปืนธรรมดา',type:'gun',   dmg:32,range:380,cdMax:480,color:'#888',bs:15},
-  {name:'ปืนมิติ',  type:'gun',   dmg:60,range:520,cdMax:830,color:'#aa44ff',bs:20,pierce:true},
+  {type:'sword', dmg:15,range:65, cdMax:400,color:'#c8860a',kb:6},
+  {type:'sword', dmg:26,range:72, cdMax:340,color:'#cccccc',kb:7},
+  {type:'sword', dmg:40,range:80, cdMax:285,color:'#FFD700',kb:8},
+  {type:'sword', dmg:58,range:90, cdMax:235,color:'#00eeff',kb:9},
+  {type:'hammer',dmg:24,range:58, cdMax:620,color:'#c8860a',kb:13},
+  {type:'hammer',dmg:40,range:65, cdMax:560,color:'#cccccc',kb:17},
+  {type:'hammer',dmg:56,range:72, cdMax:510,color:'#FFD700',kb:22},
+  {type:'hammer',dmg:78,range:82, cdMax:730,color:'#ff6b35',kb:30},
+  {type:'gun',   dmg:32,range:380,cdMax:480,color:'#888',bs:15},
+  {type:'gun',   dmg:60,range:520,cdMax:830,color:'#aa44ff',bs:20,pierce:true},
 ];
 const DODGE_MAX=1100;
 
@@ -406,6 +587,123 @@ let bullets=[],enemies=[],particles=[],drops=[];
 let timerInt=null,lastTs=0,spawnTimer=0,spawnInterval=3000,dropTimer=0;
 let armor=0,boss=null,bossSpawned=false,bossBeam=null,bossWarnTimer=0;
 let pendingSpawns=[];
+
+// ── Control type ────────────────────────────────────────────────
+let ctrlType='joystick';
+const CTRL_KEY='battleforge_ctrl';
+function loadCtrl(){return localStorage.getItem(CTRL_KEY)||'joystick';}
+function setCtrl(t){
+  ctrlType=t;localStorage.setItem(CTRL_KEY,t);
+  document.getElementById('ctrl-joystick').classList.toggle('sel',t==='joystick');
+  document.getElementById('ctrl-dpad').classList.toggle('sel',t==='dpad');
+  document.getElementById('jzone').style.display=t==='joystick'?'block':'none';
+  document.getElementById('dpad-ui').style.display=t==='dpad'?'block':'none';
+  SFX.uiClick();
+}
+
+// D-Pad state
+const dpad={left:false,right:false,up:false};
+function dpadStart(dir){
+  dpad[dir]=true;
+  if(dir==='up')doJump();
+}
+function dpadEnd(dir){dpad[dir]=false;}
+
+// ── Gems ────────────────────────────────────────────────────────
+const GEMS_KEY='battleforge_gems';
+const OWN_KEY='battleforge_owned';
+function loadGems(){return parseInt(localStorage.getItem(GEMS_KEY))||0;}
+function saveGems(g){localStorage.setItem(GEMS_KEY,Math.max(0,g));}
+function loadOwned(){try{return JSON.parse(localStorage.getItem(OWN_KEY))||[0];}catch{return [0];}}
+function saveOwned(arr){localStorage.setItem(OWN_KEY,JSON.stringify(arr));}
+let gems=loadGems();
+let ownedWeapons=loadOwned();
+
+// ราคาอาวุธ (เพชร)
+const WP_PRICE=[0,8,18,35, 12,25,45,80, 20,55];
+// gem rewards
+const GEM_REWARD={goblin:2,skeleton:2,mage:1,boss:5};
+
+function addGems(n){gems+=n;saveGems(gems);updateGemsHUD();}
+function updateGemsHUD(){
+  const el=document.getElementById('gems-hud');
+  if(el)el.textContent='💎 '+gems;
+}
+
+function openShop(){
+  SFX.uiClick();
+  renderShop();
+  document.getElementById('shopModal').classList.add('show');
+}
+function closeShop(){SFX.uiClick();document.getElementById('shopModal').classList.remove('show');}
+
+function renderShop(){
+  const owned=loadOwned();
+  const wpNames={th:['ดาบไม้','ดาบเหล็ก','ดาบทอง','ดาบเพชร','ค้อนไม้','ค้อนเหล็ก','ค้อนทอง','ค้อนยักษ์','ปืนธรรมดา','ปืนมิติ'],
+    en:['Wood Sword','Iron Sword','Gold Sword','Diamond Sword','Wood Hammer','Iron Hammer','Gold Hammer','Giant Hammer','Pistol','Void Gun']};
+  const emojis=['🗡️','⚔️','🌟','💎','🔨','🪓','⚒️','🔱','🔫','💥'];
+  const names=wpNames[curLang]||wpNames.th;
+  let html=`<div style="font-family:'Press Start 2P',monospace;font-size:7px;color:#ffcc02;text-align:center;margin-bottom:8px;">💎 ${gems}</div>`;
+  html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;width:100%;">';
+  for(let i=0;i<10;i++){
+    const isOwned=owned.includes(i);
+    const price=WP_PRICE[i];
+    const canAfford=gems>=price;
+    const color=isOwned?'#00ff88':canAfford?'#ffcc02':'#555';
+    const bg=isOwned?'rgba(0,255,136,0.1)':canAfford?'rgba(255,204,0,0.1)':'rgba(80,80,80,0.1)';
+    html+=`<div style="background:${bg};border:1.5px solid ${color};border-radius:8px;
+      padding:7px;display:flex;align-items:center;justify-content:space-between;gap:4px;
+      font-family:'Press Start 2P',monospace;">
+      <span style="font-size:16px">${emojis[i]}</span>
+      <span style="font-size:5px;color:#ddd;flex:1;line-height:1.6">${names[i]}</span>
+      ${isOwned
+        ?`<span style="font-size:6px;color:#00ff88">✅</span>`
+        :`<button onclick="buyWeapon(${i})" ontouchstart="buyWeapon(${i})"
+          style="font-family:'Press Start 2P',monospace;font-size:5px;
+          padding:4px 6px;border-radius:5px;border:1px solid ${canAfford?'#ffcc02':'#555'};
+          background:${canAfford?'rgba(255,204,0,0.2)':'rgba(80,80,80,0.1)'};
+          color:${canAfford?'#ffcc02':'#555'};cursor:pointer;">
+          💎${price}</button>`}
+    </div>`;
+  }
+  html+='</div>';
+  document.getElementById('shop-content').innerHTML=html;
+}
+
+function buyWeapon(i){
+  const owned=loadOwned();
+  if(owned.includes(i))return;
+  const price=WP_PRICE[i];
+  if(gems<price){SFX.hurt();return;}
+  gems-=price;saveGems(gems);
+  owned.push(i);saveOwned(owned);
+  ownedWeapons=owned;
+  // อัปเดต weapon bar
+  updateWeaponBar();
+  renderShop();
+  SFX.heal();
+  updateGemsHUD();
+}
+
+function updateWeaponBar(){
+  const owned=loadOwned();
+  for(let i=0;i<10;i++){
+    const el=document.getElementById('ws'+i);
+    if(!el)continue;
+    if(owned.includes(i)){
+      el.style.opacity='1';el.style.pointerEvents='all';
+      el.querySelector('.lock-icon')&&el.querySelector('.lock-icon').remove();
+    }else{
+      el.style.opacity='0.4';el.style.pointerEvents='none';
+      if(!el.querySelector('.lock-icon')){
+        const lock=document.createElement('div');
+        lock.className='lock-icon';
+        lock.style.cssText='position:absolute;top:1px;left:1px;font-size:8px;';
+        lock.textContent='🔒';el.appendChild(lock);
+      }
+    }
+  }
+}
 
 // ── 8-bit Sound Engine ──────────────────────────────────────────
 const AudioCtx=window.AudioContext||window.webkitAudioContext;
@@ -608,13 +906,41 @@ const GRAV=0.58;
 function physicsStep(e,isCircle){
   e.vy=Math.min(e.vy+GRAV,22);e.x+=e.vx;e.y+=e.vy;e.onGround=false;
   for(const p of platforms){
+    const isGround=(p.y>=H-56); // พื้นล่างสุด
     if(isCircle){
       const nx=Math.max(p.x,Math.min(e.x,p.x+p.w)),ny=Math.max(p.y,Math.min(e.y,p.y+p.h));
-      const dx=e.x-nx,dy=e.y-ny;
-      if(dx*dx+dy*dy<e.r*e.r&&e.vy>=0&&e.y<p.y+p.h/2){e.y=p.y-e.r;e.vy=0;e.onGround=true;}
+      const dx=e.x-nx,dy=e.y-ny,d2=dx*dx+dy*dy;
+      if(d2<e.r*e.r){
+        const dist=Math.sqrt(d2)||1;
+        if(isGround){
+          // พื้นล่าง — ลงได้อย่างเดียว
+          if(e.vy>=0&&e.y<p.y+p.h/2){e.y=p.y-e.r;e.vy=0;e.onGround=true;}
+        }else{
+          // แพลตฟอร์มลอย — ทะลุไม่ได้ทุกทาง
+          const ox=(dx/dist)*(e.r-dist);
+          const oy=(dy/dist)*(e.r-dist);
+          e.x+=ox;e.y+=oy;
+          if(oy<0){e.vy=0;e.onGround=true;}
+          else if(oy>0&&e.vy<0){e.vy=0;}
+          if(Math.abs(ox)>0.1)e.vx=0;
+        }
+      }
     }else{
-      if(e.x+e.w>p.x&&e.x<p.x+p.w&&e.vy>=0&&e.y+e.h>p.y&&e.y+e.h<p.y+p.h+Math.abs(e.vy)+2){
-        e.y=p.y-e.h;e.vy=0;e.onGround=true;
+      if(e.x+e.w>p.x&&e.x<p.x+p.w){
+        if(isGround){
+          if(e.vy>=0&&e.y+e.h>p.y&&e.y+e.h<p.y+p.h+Math.abs(e.vy)+2){e.y=p.y-e.h;e.vy=0;e.onGround=true;}
+        }else{
+          // ทะลุไม่ได้ทุกทาง
+          const overlapTop=e.y+e.h-p.y;
+          const overlapBot=p.y+p.h-e.y;
+          const overlapL=e.x+e.w-p.x;
+          const overlapR=p.x+p.w-e.x;
+          const minOv=Math.min(overlapTop,overlapBot,overlapL,overlapR);
+          if(minOv===overlapTop&&e.vy>=0){e.y=p.y-e.h;e.vy=0;e.onGround=true;}
+          else if(minOv===overlapBot&&e.vy<0){e.y=p.y+p.h;e.vy=0;}
+          else if(minOv===overlapL){e.x=p.x-e.w;e.vx=0;}
+          else if(minOv===overlapR){e.x=p.x+p.w;e.vx=0;}
+        }
       }
     }
   }
@@ -628,8 +954,13 @@ function physicsStep(e,isCircle){
 function doJump(){if(!gameRunning||gamePaused)return;if(player.onGround){player.vy=-16;SFX.jump();}}
 function doDodge(){
   if(!gameRunning||gamePaused||dodgeCd>0)return;
-  player.vx=player.facing*22;player.invincible=380;dodgeCd=DODGE_MAX;
-  spawnParticle(player.x,player.y,'#ffcc02',8);
+  // พุ่งไปข้างหน้าแรงๆ พร้อม i-frame
+  player.vx=player.facing*28;
+  player.vy=Math.min(player.vy,-2); // พุ่งขึ้นนิดหน่อย
+  player.invincible=500;
+  dodgeCd=DODGE_MAX;
+  spawnParticle(player.x,player.y,'#ffcc02',10);
+  spawnParticle(player.x-player.facing*15,player.y,'#ffffff',6);
   SFX.dash();
 }
 function doAttack(){
@@ -726,8 +1057,9 @@ function killBoss(){
   score+=200;document.getElementById('scoreVal').textContent=score;
   spawnParticle(boss.x+boss.w/2,boss.y+boss.h/2,'#ff2040',30);
   spawnParticle(boss.x+boss.w/2,boss.y+boss.h/2,'#ffcc02',20);
-  addKillMsg('👹 บอสพ่ายแพ้! +200');
+  addKillMsg(T('bossKill'));
   spawnDrop(boss.x+boss.w/2,boss.y);spawnDrop(boss.x+boss.w/2+20,boss.y);
+  addGems(GEM_REWARD.boss);
   document.getElementById('boss-hud').classList.remove('show');
   boss=null;bossBeam=null;bossWarnTimer=0;playerPosHistory=[];
   SFX.bossKill();
@@ -813,8 +1145,8 @@ function updateBoss(dt){
   // ── Fire phase: SWEEP (★ star) ────────────────────────────────
   if(boss.beamPhase==='fire'&&boss.beamType==='sweep'){
     boss.sweepTimer-=dt;
-    // Slow rotation while firing
-    boss.sweepRotOffset+=0.0008*dt;
+    // ไม่หมุนแล้ว — ตรึงทิศทางไว้
+    // boss.sweepRotOffset+=0.0008*dt;  // ปิดการหมุน
     bossBeam.cx=bx;bossBeam.cy=by;
     bossBeam.rotOffset=boss.sweepRotOffset;
     bossBeam.alpha=Math.min(1,boss.sweepTimer/400+0.3);
@@ -881,10 +1213,47 @@ function updateBoss(dt){
 }
 
 // ── Enemies ──────────────────────────────────────────────────────
+// ── Highscore system ────────────────────────────────────────────
+const SCORE_KEY='battleforge_scores';
+function loadScores(){try{return JSON.parse(localStorage.getItem(SCORE_KEY))||{};}catch{return {};}}
+function saveScore(diffIdx,s){
+  const data=loadScores();
+  if(!data[diffIdx]||s>data[diffIdx])data[diffIdx]=s;
+  localStorage.setItem(SCORE_KEY,JSON.stringify(data));
+}
+function clearStats(){
+  localStorage.removeItem(SCORE_KEY);
+  renderStats();
+  SFX.uiClick();
+}
+function renderStats(){
+  const data=loadScores();
+  const dm=[0.5,1.0,1.8,3.0,5.0];
+  const dnames={th:['ง่าย','ปกติ','ยาก','ยากมาก','นรกแตก'],en:['Easy','Normal','Hard','Very Hard','Hell']};
+  const names=dnames[curLang]||dnames.th;
+  const emojis=['😊','😐','😤','😰','💀'];
+  const colors=['#00ff88','#9c7cff','#ffbb44','#ff7744','#ff4466'];
+  let html='';
+  for(let i=0;i<5;i++){
+    const best=data[i]||0;
+    html+=`<div style="display:flex;justify-content:space-between;align-items:center;
+      padding:6px 10px;background:rgba(255,255,255,0.04);border-radius:6px;
+      border-left:3px solid ${colors[i]};">
+      <span style="font-family:'Press Start 2P',monospace;font-size:7px;color:${colors[i]}">${emojis[i]} ${names[i]}</span>
+      <span style="font-family:'Orbitron',sans-serif;font-size:12px;color:#ffcc02;font-weight:700">${best>0?best:'—'}</span>
+    </div>`;
+  }
+  document.getElementById('stats-content').innerHTML=html;
+}
+function openSettings(){SFX.uiClick();document.getElementById('settingsModal').classList.add('show');}
+function closeSettings(){SFX.uiClick();document.getElementById('settingsModal').classList.remove('show');}
+function openStats(){SFX.uiClick();renderStats();document.getElementById('statsModal').classList.add('show');}
+function closeStats(){SFX.uiClick();document.getElementById('statsModal').classList.remove('show');}
+
 const ECFG={
-  goblin:  {hp:60,maxHp:60,spd:1.8,dmg:8, color:'#3a9a3a',w:26,h:36,emoji:'👺',reward:10},
-  skeleton:{hp:85,maxHp:85,spd:1.3,dmg:13,color:'#d0d0d0',w:26,h:40,emoji:'💀',reward:15},
-  mage:    {hp:55,maxHp:55,spd:1.0,dmg:17,color:'#9b4fd8',w:26,h:40,emoji:'🧙',reward:25,ranged:true},
+  goblin:  {hp:60,maxHp:60,spd:1.8,dmg:22, color:'#3a9a3a',w:26,h:36,emoji:'👺',reward:10},
+  skeleton:{hp:85,maxHp:85,spd:1.3,dmg:32, color:'#d0d0d0',w:26,h:40,emoji:'💀',reward:15},
+  mage:    {hp:55,maxHp:55,spd:1.0,dmg:28, color:'#9b4fd8',w:26,h:40,emoji:'🧙',reward:25,ranged:true},
 };
 function spawnEnemy(type){
   if(type==='boss'){spawnBoss();return;}
@@ -894,8 +1263,10 @@ function spawnEnemy(type){
 }
 function killEnemy(e){
   score+=e.reward;document.getElementById('scoreVal').textContent=score;
-  spawnParticle(e.x+e.w/2,e.y+e.h/2,e.color,14);addKillMsg(`${e.emoji} +${e.reward}`);
+  spawnParticle(e.x+e.w/2,e.y+e.h/2,e.color,14);
+  addKillMsg(`${e.emoji} +${e.reward}`);
   if(Math.random()<0.3)spawnDrop(e.x+e.w/2,e.y);
+  const g=GEM_REWARD[e.type]||1;addGems(g);
   SFX.kill();
 }
 function updateEnemies(dt){
@@ -1116,19 +1487,14 @@ function drawBoss(){
         const ey=cy+Math.sin(baseAngle)*RAY_LEN;
 
         // Glow outer
-        ctx.shadowColor='#ff0000';ctx.shadowBlur=28;
-        ctx.strokeStyle=`rgba(255,40,0,${al*0.5})`;
-        ctx.lineWidth=20;
+        ctx.shadowColor='#ff0000';ctx.shadowBlur=10;
+        ctx.strokeStyle=`rgba(255,40,0,${al*0.4})`;
+        ctx.lineWidth=14;
         ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(ex,ey);ctx.stroke();
         // Core
-        ctx.shadowBlur=12;
-        ctx.strokeStyle=`rgba(255,160,140,${al})`;
-        ctx.lineWidth=5;
-        ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(ex,ey);ctx.stroke();
-        // Bright core
         ctx.shadowBlur=0;
-        ctx.strokeStyle=`rgba(255,255,220,${al*0.85})`;
-        ctx.lineWidth=2;
+        ctx.strokeStyle=`rgba(255,160,140,${al})`;
+        ctx.lineWidth=4;
         ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(ex,ey);ctx.stroke();
       }
 
@@ -1174,13 +1540,10 @@ function drawBoss(){
         // extend beam past target
         const ex=cx+dx/len*Math.max(W,H)*1.4,ey=cy+dy/len*Math.max(W,H)*1.4;
 
-        ctx.shadowColor='#ff0000';ctx.shadowBlur=30;
-        ctx.strokeStyle=`rgba(255,40,0,${al*0.5})`;ctx.lineWidth=22;
+        ctx.shadowColor='#ff0000';ctx.shadowBlur=12;
+        ctx.strokeStyle=`rgba(255,40,0,${al*0.4})`;ctx.lineWidth=14;
         ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(ex,ey);ctx.stroke();
-        ctx.strokeStyle=`rgba(255,120,80,${al})`;ctx.lineWidth=7;
-        ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(ex,ey);ctx.stroke();
-        ctx.shadowBlur=0;
-        ctx.strokeStyle=`rgba(255,240,200,${al*0.9})`;ctx.lineWidth=2;
+        ctx.strokeStyle=`rgba(255,120,80,${al})`;ctx.lineWidth=5;ctx.shadowBlur=0;
         ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(ex,ey);ctx.stroke();
 
         // Target burst circle
@@ -1283,7 +1646,7 @@ function gameLoop(ts){
   if(gamePaused){lastTs=ts;requestAnimationFrame(gameLoop);return;}
   const dt=Math.min(ts-lastTs,50);lastTs=ts;
 
-  let mx=jDx;
+  let mx=ctrlType==='dpad'?(dpad.left?-1:dpad.right?1:0):jDx;
   if(keys['KeyA']||keys['ArrowLeft'])mx=-1;
   if(keys['KeyD']||keys['ArrowRight'])mx=1;
   if(Math.abs(mx)>0.08){player.vx=mx*5;player.facing=mx>0?1:-1;}
@@ -1345,7 +1708,12 @@ function gameLoop(ts){
 }
 
 // ── Controls ─────────────────────────────────────────────────────
-function selWp(i){document.getElementById('ws'+selWeapon).classList.remove('active');selWeapon=i;document.getElementById('ws'+i).classList.add('active');}
+function selWp(i){
+  if(!loadOwned().includes(i)){SFX.hurt();return;}
+  document.getElementById('ws'+selWeapon).classList.remove('active');
+  selWeapon=i;document.getElementById('ws'+i).classList.add('active');
+  SFX.uiWp();
+}
 
 function pauseGame(){
   if(!gameRunning)return;
@@ -1366,8 +1734,8 @@ function goMainMenu(){
   document.getElementById('boss-hud').classList.remove('show');
   document.getElementById('final-score-wrap').style.display='none';
   document.querySelector('#menuModal h1').textContent='⚔️ BATTLEFORGE';
-  document.querySelector('#menuModal p').textContent='เลือกแผนที่';
-  document.querySelector('.mbtn.primary').textContent='▶ เริ่มเกม';
+  document.querySelector('#menuModal p').textContent=T('selectMap');
+  document.querySelector('.mbtn.primary').textContent=T('startGame');
   document.getElementById('menuModal').classList.add('show');
 }
 
@@ -1424,19 +1792,28 @@ function _startGame(){
   // ปุ่ม modal ทั่วไป
   document.querySelectorAll('.mbtn').forEach(el=>el.addEventListener('click',()=>SFX.uiClick()));
 
+  lastTs=performance.now();
+  requestAnimationFrame(gameLoop);
 }
 
 function endGame(survived){
   gameRunning=false;gamePaused=false;clearInterval(timerInt);
   boss=null;bossBeam=null;document.getElementById('boss-hud').classList.remove('show');
+  saveScore(curDiff,score);
+  const best=loadScores()[curDiff]||0;
   survived?SFX.win():SFX.lose();
   const ov=document.getElementById('menuModal');
   ov.classList.add('show');
-  ov.querySelector('h1').textContent=survived?'🏆 ชนะ!':'💀 แพ้แล้ว!';
-  ov.querySelector('p').textContent=survived?`เอาชีวิตรอดได้! [${DIFF_CFG[curDiff].emoji}${DIFF_CFG[curDiff].label}]`:`พลังชีวิตหมด... [${DIFF_CFG[curDiff].emoji}${DIFF_CFG[curDiff].label}]`;
+  ov.querySelector('h1').textContent=survived?T('won'):T('lost');
+  ov.querySelector('p').textContent=survived
+    ?`${T('wonMsg')} [${DIFF_CFG[curDiff].emoji}${DIFF_CFG[curDiff].label}]`
+    :`${T('lostMsg')} [${DIFF_CFG[curDiff].emoji}${DIFF_CFG[curDiff].label}]`;
   document.getElementById('final-score-wrap').style.display='block';
-  document.getElementById('final-score-text').textContent=`คะแนน: ${score}`;
-  document.querySelector('.mbtn.primary').textContent='🔄 เล่นใหม่';
+  const isNew=score>=best;
+  document.getElementById('final-score-text').innerHTML=
+    `${T('score')}: <span style="color:#ffcc02">${score}</span>`+
+    (isNew&&score>0?`<br><span style="color:#00ff88;font-size:8px">🏆 Best!</span>`:`<br><span style="font-size:7px;color:#7c5cff">Best: ${best}</span>`);
+  document.querySelector('.mbtn.primary').textContent=T('startGame');
 }
 </script>
 </body>
