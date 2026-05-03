@@ -50,7 +50,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;touch-action:no
 #gameCanvas{flex:1;display:block;width:100%;}
 
 /* Weapon bar */
-#wbar{display:flex;align-items:center;gap:4px;padding:4px 8px;background:#08021a;border-top:2px solid #5c3aff22;overflow-x:auto;flex-shrink:0;scrollbar-width:none;}
+#wbar{display:flex;align-items:center;gap:4px;padding:4px 8px;background:#08021a;border-bottom:2px solid #5c3aff22;overflow-x:auto;flex-shrink:0;scrollbar-width:none;}
 #wbar::-webkit-scrollbar{display:none;}
 .ws{flex-shrink:0;width:42px;height:42px;background:#1a0a2e;border:2px solid #2a1a4e;border-radius:8px;
   display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:15px;cursor:pointer;user-select:none;position:relative;}
@@ -231,7 +231,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;touch-action:no
       <div class="score-num" id="scoreVal">0</div>
     </div>
   </div>
-  <canvas id="gameCanvas" style="background:#06021a;"></canvas>
+  <!-- Weapon bar ย้ายมาด้านบน ใต้ HUD -->
   <div id="wbar">
     <div class="ws active" id="ws0" ontouchstart="selWp(0)" onclick="selWp(0)">🗡️<div class="wn">ดาบไม้</div></div>
     <div class="ws" id="ws1" ontouchstart="selWp(1)" onclick="selWp(1)">⚔️<div class="wn">ดาบเหล็ก</div></div>
@@ -246,7 +246,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;touch-action:no
     <div class="ws" id="ws8" ontouchstart="selWp(8)" onclick="selWp(8)">🔫<div class="wn">ปืนธรรมดา</div></div>
     <div class="ws" id="ws9" ontouchstart="selWp(9)" onclick="selWp(9)">💥<div class="wn">ปืนมิติ</div></div>
   </div>
-</div>
+  <canvas id="gameCanvas" style="background:#06021a;"></canvas>
 
 <!-- Touch UI -->
 <div id="touch-ui">
@@ -342,12 +342,16 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;touch-action:no
     </div>
     <div class="cplabel" style="color:#00eeff;margin-top:4px;">🕹️ ปุ่มควบคุม</div>
     <div style="display:flex;gap:8px;">
-      <div class="diff-btn sel" id="ctrl-joystick" onclick="setCtrl('joystick')" ontouchstart="setCtrl('joystick')" style="padding:8px 12px;font-size:6px;border-color:#00eeff;color:#00eeff;text-align:center;">🕹️<br>Joystick<br>วงกลม</div>
-      <div class="diff-btn" id="ctrl-dpad" onclick="setCtrl('dpad')" ontouchstart="setCtrl('dpad')" style="padding:8px 12px;font-size:6px;border-color:#7c5cff;color:#9c7cff;text-align:center;">◀▶<br>D-Pad<br>ลูกศร</div>
+      <div class="diff-btn sel" id="ctrl-joystick" onclick="setCtrl('joystick')" ontouchstart="setCtrl('joystick')" style="padding:8px 12px;font-size:6px;border-color:#00eeff;color:#00eeff;text-align:center;">🕹️<br>Joystick</div>
+      <div class="diff-btn" id="ctrl-dpad" onclick="setCtrl('dpad')" ontouchstart="setCtrl('dpad')" style="padding:8px 12px;font-size:6px;border-color:#7c5cff;color:#9c7cff;text-align:center;">◀▶<br>D-Pad</div>
     </div>
+    <div style="width:100%;height:1px;background:#2a1a4e;margin:4px 0;"></div>
+    <button class="mbtn" onclick="openResetConfirm(event)" ontouchstart="openResetConfirm(event)"
+      style="background:rgba(255,40,40,0.15);border:1.5px solid #ff4040;color:#ff6060;width:100%;max-width:220px;"
+      id="reset-btn">⚠️ รีเซ็ตข้อมูลทั้งหมด</button>
   </div>
   <div class="mbtns">
-    <button class="mbtn primary" onclick="closeSettings()" ontouchstart="closeSettings()" id="settings-close">✅ บันทึก</button>
+    <button class="mbtn primary" onclick="closeSettings(event)" ontouchstart="closeSettings(event)" id="settings-close">✅ บันทึก</button>
   </div>
 </div>
 
@@ -356,8 +360,8 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;touch-action:no
   <h1 id="stats-title">🏆 สถิติ</h1>
   <div id="stats-content" style="width:100%;display:flex;flex-direction:column;gap:6px;"></div>
   <div class="mbtns">
-    <button class="mbtn" onclick="clearStats()" ontouchstart="clearStats()" style="background:rgba(255,40,40,0.15);border-color:#ff4040;color:#ff6060;" id="stats-clear">🗑️ ล้างสถิติ</button>
-    <button class="mbtn primary" onclick="closeStats()" ontouchstart="closeStats()" id="stats-close">✅ ปิด</button>
+    <button class="mbtn" onclick="clearStats(event)" ontouchstart="clearStats(event)" style="background:rgba(255,40,40,0.15);border-color:#ff4040;color:#ff6060;" id="stats-clear">🗑️ ล้างสถิติ</button>
+    <button class="mbtn primary" onclick="closeStats(event)" ontouchstart="closeStats(event)" id="stats-close">✅ ปิด</button>
   </div>
 </div>
 
@@ -372,11 +376,20 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;touch-action:no
     <div class="abtn" id="dpad-right" style="background:rgba(92,58,255,0.2);border:2px solid #5c3aff;color:#9c7cff;font-size:18px;" ontouchstart="dpadStart('right')" ontouchend="dpadEnd('right')">▶</div>
   </div>
 </div>
+<!-- RESET CONFIRM MODAL -->
+<div class="modal" id="resetModal">
+  <h1 style="font-size:clamp(16px,4vw,28px);background:linear-gradient(135deg,#ff2040,#ff6060);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">⚠️ รีเซ็ต?</h1>
+  <p id="reset-msg" style="color:#ff8090;">จะลบเพชร อาวุธที่ซื้อ และสถิติทั้งหมด<br>ไม่สามารถกู้คืนได้!</p>
+  <div class="mbtns">
+    <button class="mbtn red" onclick="doReset(event)" ontouchstart="doReset(event)" id="reset-confirm-btn">🗑️ ยืนยัน รีเซ็ต</button>
+    <button class="mbtn" onclick="closeResetConfirm(event)" ontouchstart="closeResetConfirm(event)" id="reset-cancel-btn" style="background:rgba(92,58,255,0.2);border:1.5px solid #5c3aff;color:#9c7cff;">✖️ ยกเลิก</button>
+  </div>
+</div>
 <div class="modal" id="shopModal">
   <h1 id="shop-title">🛒 ร้านค้า</h1>
   <div id="shop-content" style="width:100%;max-height:55vh;overflow-y:auto;"></div>
   <div class="mbtns">
-    <button class="mbtn primary" onclick="closeShop()" ontouchstart="closeShop()" id="shop-close">✅ ปิด</button>
+    <button class="mbtn primary" onclick="closeShop(event)" ontouchstart="closeShop(event)" id="shop-close">✅ ปิด</button>
   </div>
 </div>
 <div class="modal" id="pauseModal">
@@ -407,6 +420,12 @@ window.addEventListener('resize',resizeCanvas);
 // รอ layout พร้อมก่อน โดยเฉพาะ Android
 setTimeout(resizeCanvas,100);
 setTimeout(resizeCanvas,500);
+// ป้องกัน modal ปิดเมื่อกดข้างใน
+document.querySelectorAll('.modal').forEach(m=>{
+  m.addEventListener('click',e=>{if(e.target===m)e.stopPropagation();});
+  m.addEventListener('touchstart',e=>{if(e.target===m)e.stopPropagation();},{passive:false});
+});
+
 setTimeout(()=>{
   applyLang();
   updateGemsHUD();
@@ -559,9 +578,38 @@ function applyLang(){
   if(startBtnEl&&!gameRunning)startBtnEl.textContent=T('startGame');
   // lang buttons highlight
   const lth=document.getElementById('lang-th');
-  const len=document.getElementById('lang-en');
+  const len2=document.getElementById('lang-en');
   if(lth)lth.classList.toggle('sel',curLang==='th');
-  if(len)len.classList.toggle('sel',curLang==='en');
+  if(len2)len2.classList.toggle('sel',curLang==='en');
+  // shop
+  const shopT=document.getElementById('shop-title');if(shopT)shopT.textContent=curLang==='en'?'🛒 Shop':'🛒 ร้านค้า';
+  const shopC=document.getElementById('shop-close');if(shopC)shopC.textContent=curLang==='en'?'✅ Close':'✅ ปิด';
+  const shopBtn=document.getElementById('shop-btn');if(shopBtn)shopBtn.textContent=curLang==='en'?'🛒 Shop':'🛒 ร้านค้า';
+  // stats
+  const statsT=document.getElementById('stats-title');if(statsT)statsT.textContent=curLang==='en'?'🏆 Stats':'🏆 สถิติ';
+  const statsC=document.getElementById('stats-close');if(statsC)statsC.textContent=curLang==='en'?'✅ Close':'✅ ปิด';
+  const statsCl=document.getElementById('stats-clear');if(statsCl)statsCl.textContent=curLang==='en'?'🗑️ Clear':'🗑️ ล้างสถิติ';
+  const statsBtn2=document.querySelector('#menuModal .mbtn:last-child');if(statsBtn2)statsBtn2.textContent=curLang==='en'?'🏆 Stats':'🏆 สถิติ';
+  // settings
+  const settingsT=document.getElementById('settings-title');if(settingsT)settingsT.textContent=curLang==='en'?'⚙️ Settings':'⚙️ ตั้งค่า';
+  const settingsC=document.getElementById('settings-close');if(settingsC)settingsC.textContent=curLang==='en'?'✅ Save':'✅ บันทึก';
+  const settingsBtn2=document.querySelector('#menuModal .mbtn:nth-child(3)');if(settingsBtn2)settingsBtn2.textContent=curLang==='en'?'⚙️ Settings':'⚙️ ตั้งค่า';
+  // pause title
+  const pauseTitle=document.getElementById('pause-title');if(pauseTitle)pauseTitle.textContent=curLang==='en'?'⏸ Paused':'⏸ หยุดเกม';
+  // custom mode labels
+  const cpCL=document.getElementById('cp-custom-label');if(cpCL)cpCL.textContent=curLang==='en'?'⚙️ Custom Mode':'⚙️ โหมดกำหนดเอง';
+  const cpTL=document.getElementById('cp-time-label');if(cpTL)cpTL.textContent=curLang==='en'?'⏱ Time (min)':'⏱ เวลา (นาที)';
+  const cpSL=document.getElementById('cp-spawn-label');if(cpSL)cpSL.textContent=curLang==='en'?'Spawn Monster':'เสกมอนสเตอร์';
+  const resetBtn=document.getElementById('reset-btn');
+  if(resetBtn)resetBtn.textContent=curLang==='en'?'⚠️ Reset All Data':'⚠️ รีเซ็ตข้อมูลทั้งหมด';
+  const resetMsg=document.getElementById('reset-msg');
+  if(resetMsg)resetMsg.innerHTML=curLang==='en'?'This will delete gems, weapons & stats.<br>Cannot be undone!':'จะลบเพชร อาวุธที่ซื้อ และสถิติทั้งหมด<br>ไม่สามารถกู้คืนได้!';
+  const resetCfm=document.getElementById('reset-confirm-btn');
+  if(resetCfm)resetCfm.textContent=curLang==='en'?'🗑️ Confirm Reset':'🗑️ ยืนยัน รีเซ็ต';
+  const resetCnl=document.getElementById('reset-cancel-btn');
+  if(resetCnl)resetCnl.textContent=curLang==='en'?'✖️ Cancel':'✖️ ยกเลิก';
+  if(document.getElementById('shopModal').classList.contains('show'))renderShop();
+  if(document.getElementById('statsModal').classList.contains('show'))renderStats();
 }
 function setLang(l){curLang=l;applyLang();}
 
@@ -630,12 +678,43 @@ function updateGemsHUD(){
   if(el)el.textContent='💎 '+gems;
 }
 
-function openShop(){
+function openResetConfirm(e){
+  if(e){e.stopPropagation();e.preventDefault();}
   SFX.uiClick();
-  renderShop();
-  document.getElementById('shopModal').classList.add('show');
+  setTimeout(()=>document.getElementById('resetModal').classList.add('show'),80);
 }
-function closeShop(){SFX.uiClick();document.getElementById('shopModal').classList.remove('show');}
+function closeResetConfirm(e){
+  if(e){e.stopPropagation();e.preventDefault();}
+  SFX.uiClick();
+  document.getElementById('resetModal').classList.remove('show');
+}
+function doReset(e){
+  if(e){e.stopPropagation();e.preventDefault();}
+  // ลบข้อมูลทั้งหมด
+  localStorage.removeItem(GEMS_KEY);
+  localStorage.removeItem(OWN_KEY);
+  localStorage.removeItem(SCORE_KEY);
+  localStorage.removeItem(CTRL_KEY);
+  // reset state
+  gems=0;ownedWeapons=[0];selWeapon=0;
+  updateGemsHUD();
+  updateWeaponBar();
+  document.getElementById('ws0').classList.add('active');
+  document.getElementById('resetModal').classList.remove('show');
+  SFX.lose();
+  setTimeout(()=>{
+    document.getElementById('settingsModal').classList.remove('show');
+  },300);
+}
+function openShop(){
+  SFX.uiClick();renderShop();
+  setTimeout(()=>document.getElementById('shopModal').classList.add('show'),80);
+}
+function closeShop(e){if(e){e.stopPropagation();e.preventDefault();}SFX.uiClick();document.getElementById('shopModal').classList.remove('show');}
+function openSettings(){SFX.uiClick();setTimeout(()=>document.getElementById('settingsModal').classList.add('show'),80);}
+function closeSettings(e){if(e){e.stopPropagation();e.preventDefault();}SFX.uiClick();document.getElementById('settingsModal').classList.remove('show');}
+function openStats(){SFX.uiClick();renderStats();setTimeout(()=>document.getElementById('statsModal').classList.add('show'),80);}
+function closeStats(e){if(e){e.stopPropagation();e.preventDefault();}SFX.uiClick();document.getElementById('statsModal').classList.remove('show');}
 
 function renderShop(){
   const owned=loadOwned();
@@ -906,41 +985,13 @@ const GRAV=0.58;
 function physicsStep(e,isCircle){
   e.vy=Math.min(e.vy+GRAV,22);e.x+=e.vx;e.y+=e.vy;e.onGround=false;
   for(const p of platforms){
-    const isGround=(p.y>=H-56); // พื้นล่างสุด
     if(isCircle){
       const nx=Math.max(p.x,Math.min(e.x,p.x+p.w)),ny=Math.max(p.y,Math.min(e.y,p.y+p.h));
-      const dx=e.x-nx,dy=e.y-ny,d2=dx*dx+dy*dy;
-      if(d2<e.r*e.r){
-        const dist=Math.sqrt(d2)||1;
-        if(isGround){
-          // พื้นล่าง — ลงได้อย่างเดียว
-          if(e.vy>=0&&e.y<p.y+p.h/2){e.y=p.y-e.r;e.vy=0;e.onGround=true;}
-        }else{
-          // แพลตฟอร์มลอย — ทะลุไม่ได้ทุกทาง
-          const ox=(dx/dist)*(e.r-dist);
-          const oy=(dy/dist)*(e.r-dist);
-          e.x+=ox;e.y+=oy;
-          if(oy<0){e.vy=0;e.onGround=true;}
-          else if(oy>0&&e.vy<0){e.vy=0;}
-          if(Math.abs(ox)>0.1)e.vx=0;
-        }
-      }
+      const dx=e.x-nx,dy=e.y-ny;
+      if(dx*dx+dy*dy<e.r*e.r&&e.vy>=0&&e.y<p.y+p.h/2){e.y=p.y-e.r;e.vy=0;e.onGround=true;}
     }else{
-      if(e.x+e.w>p.x&&e.x<p.x+p.w){
-        if(isGround){
-          if(e.vy>=0&&e.y+e.h>p.y&&e.y+e.h<p.y+p.h+Math.abs(e.vy)+2){e.y=p.y-e.h;e.vy=0;e.onGround=true;}
-        }else{
-          // ทะลุไม่ได้ทุกทาง
-          const overlapTop=e.y+e.h-p.y;
-          const overlapBot=p.y+p.h-e.y;
-          const overlapL=e.x+e.w-p.x;
-          const overlapR=p.x+p.w-e.x;
-          const minOv=Math.min(overlapTop,overlapBot,overlapL,overlapR);
-          if(minOv===overlapTop&&e.vy>=0){e.y=p.y-e.h;e.vy=0;e.onGround=true;}
-          else if(minOv===overlapBot&&e.vy<0){e.y=p.y+p.h;e.vy=0;}
-          else if(minOv===overlapL){e.x=p.x-e.w;e.vx=0;}
-          else if(minOv===overlapR){e.x=p.x+p.w;e.vx=0;}
-        }
+      if(e.x+e.w>p.x&&e.x<p.x+p.w&&e.vy>=0&&e.y+e.h>p.y&&e.y+e.h<p.y+p.h+Math.abs(e.vy)+2){
+        e.y=p.y-e.h;e.vy=0;e.onGround=true;
       }
     }
   }
@@ -1143,7 +1194,7 @@ function updateBoss(dt){
   }
 
   // ── Fire phase: SWEEP (★ star) ────────────────────────────────
-  if(boss.beamPhase==='fire'&&boss.beamType==='sweep'){
+  if(boss&&boss.beamPhase==='fire'&&boss.beamType==='sweep'){
     boss.sweepTimer-=dt;
     // ไม่หมุนแล้ว — ตรึงทิศทางไว้
     // boss.sweepRotOffset+=0.0008*dt;  // ปิดการหมุน
@@ -1179,7 +1230,7 @@ function updateBoss(dt){
   }
 
   // ── Fire phase: TRACK ─────────────────────────────────────────
-  if(boss.beamPhase==='fire'&&boss.beamType==='track'){
+  if(boss&&boss.beamPhase==='fire'&&boss.beamType==='track'){
     boss.trackTimer-=dt;
     bossBeam.cx=bx;bossBeam.cy=by;
     bossBeam.alpha=Math.min(1,boss.trackTimer/300+0.3);
@@ -1221,10 +1272,10 @@ function saveScore(diffIdx,s){
   if(!data[diffIdx]||s>data[diffIdx])data[diffIdx]=s;
   localStorage.setItem(SCORE_KEY,JSON.stringify(data));
 }
-function clearStats(){
+function clearStats(e){
+  if(e){e.stopPropagation();e.preventDefault();}
   localStorage.removeItem(SCORE_KEY);
-  renderStats();
-  SFX.uiClick();
+  renderStats();SFX.uiClick();
 }
 function renderStats(){
   const data=loadScores();
@@ -1245,10 +1296,6 @@ function renderStats(){
   }
   document.getElementById('stats-content').innerHTML=html;
 }
-function openSettings(){SFX.uiClick();document.getElementById('settingsModal').classList.add('show');}
-function closeSettings(){SFX.uiClick();document.getElementById('settingsModal').classList.remove('show');}
-function openStats(){SFX.uiClick();renderStats();document.getElementById('statsModal').classList.add('show');}
-function closeStats(){SFX.uiClick();document.getElementById('statsModal').classList.remove('show');}
 
 const ECFG={
   goblin:  {hp:60,maxHp:60,spd:1.8,dmg:22, color:'#3a9a3a',w:26,h:36,emoji:'👺',reward:10},
@@ -1740,6 +1787,11 @@ function goMainMenu(){
 }
 
 function startGame(){
+  // ป้องกันเริ่มเกมถ้า modal อื่นเปิดอยู่
+  if(document.getElementById('shopModal').classList.contains('show'))return;
+  if(document.getElementById('settingsModal').classList.contains('show'))return;
+  if(document.getElementById('statsModal').classList.contains('show'))return;
+  if(document.getElementById('resetModal').classList.contains('show'))return;
   document.getElementById('menuModal').classList.remove('show');
   if(gameRunning)return;
   SFX.uiStart();
@@ -1798,7 +1850,9 @@ function _startGame(){
 
 function endGame(survived){
   gameRunning=false;gamePaused=false;clearInterval(timerInt);
-  boss=null;bossBeam=null;document.getElementById('boss-hud').classList.remove('show');
+  boss=null;bossBeam=null;bossSpawned=false;
+  document.getElementById('boss-hud').classList.remove('show');
+  document.getElementById('boss-countdown').classList.remove('show');
   saveScore(curDiff,score);
   const best=loadScores()[curDiff]||0;
   survived?SFX.win():SFX.lose();
