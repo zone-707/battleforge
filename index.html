@@ -194,6 +194,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;touch-action:no
 #spw-skeleton{border-color:#aaa;color:#ccc;}
 #spw-mage{border-color:#9b4fd8;color:#bb7ef8;}
 #spw-boss{border-color:#ff2040;color:#ff6060;}
+#spw-bat{border-color:#884488;color:#cc88cc;}
 
 /* Difficulty */
 #diff-select{display:flex;gap:5px;justify-content:center;flex-wrap:wrap;}
@@ -208,6 +209,26 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;touch-action:no
 #d3{border-color:#ff4400;color:#ff7744;}#d3.sel{background:#1e0600;box-shadow:0 0 10px #ff440044;}
 #d4{border-color:#ff0040;color:#ff4466;}#d4.sel{background:#200008;box-shadow:0 0 12px #ff004466;}
 #diff-badge{font-family:'Press Start 2P',monospace;font-size:6px;text-align:center;min-height:10px;}
+
+/* XP / Level */
+#xp-hud{display:flex;flex-direction:column;align-items:center;gap:1px;min-width:90px;}
+#xp-level{font-family:'Orbitron',sans-serif;font-size:11px;font-weight:900;color:#ffcc02;text-shadow:0 0 8px #ffcc0266;}
+#xp-bar-wrap{width:90px;height:7px;background:#1a0a2e;border:1px solid #5c3aff44;border-radius:4px;overflow:hidden;}
+#xp-bar-fill{height:100%;background:linear-gradient(90deg,#5c3aff,#aa66ff);transition:width .4s ease;box-shadow:0 0 6px #7c5cff;}
+#xp-txt{font-family:'Press Start 2P',monospace;font-size:5px;color:#9c7cff;}
+.level-up-popup{
+  position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
+  font-family:'Press Start 2P',monospace;font-size:clamp(14px,4vw,22px);
+  color:#ffcc02;text-shadow:0 0 20px #ffcc02,3px 3px 0 #000;
+  pointer-events:none;z-index:60;
+  animation:lvlPop 1.5s forwards;
+}
+@keyframes lvlPop{
+  0%{opacity:0;transform:translate(-50%,-60%) scale(0.8);}
+  20%{opacity:1;transform:translate(-50%,-50%) scale(1.15);}
+  70%{opacity:1;transform:translate(-50%,-50%) scale(1);}
+  100%{opacity:0;transform:translate(-50%,-40%) scale(0.9);}
+}
 </style>
 </head>
 <body>
@@ -224,6 +245,12 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;touch-action:no
     <div style="display:flex;flex-direction:column;align-items:center;gap:3px;">
       <div id="timer-display">05:00</div>
       <button id="pause-btn" onclick="pauseGame()">⏸ หยุด</button>
+    </div>
+    <!-- XP Bar กลาง -->
+    <div id="xp-hud">
+      <div id="xp-level">Lv.1</div>
+      <div id="xp-bar-wrap"><div id="xp-bar-fill" style="width:0%"></div></div>
+      <div id="xp-txt">0 / 50 XP</div>
     </div>
     <div style="text-align:right;display:flex;flex-direction:column;gap:2px;">
       <div class="hlabel" id="gems-hud" style="color:#00eeff;font-size:8px;cursor:pointer;" onclick="openShop()" ontouchstart="openShop()">💎 0</div>
@@ -245,6 +272,10 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;touch-action:no
     <div class="wdiv"></div>
     <div class="ws" id="ws8" ontouchstart="selWp(8)" onclick="selWp(8)">🔫<div class="wn">ปืนธรรมดา</div></div>
     <div class="ws" id="ws9" ontouchstart="selWp(9)" onclick="selWp(9)">💥<div class="wn">ปืนมิติ</div></div>
+    <div class="wdiv"></div>
+    <div class="ws" id="ws10" ontouchstart="selWp(10)" onclick="selWp(10)">🏹<div class="wn">ธนูค้างคาว</div></div>
+    <div class="wdiv"></div>
+    <div class="ws" id="ws10" ontouchstart="selWp(10)" onclick="selWp(10)">🦇<div class="wn">ปืนค้างคาว</div></div>
   </div>
   <canvas id="gameCanvas" style="background:#06021a;"></canvas>
 
@@ -316,6 +347,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;touch-action:no
       <div class="spwbtn" id="spw-goblin" onclick="queueSpawn('goblin')">👺 กอบลิน</div>
       <div class="spwbtn" id="spw-skeleton" onclick="queueSpawn('skeleton')">💀 สเกเลตัน</div>
       <div class="spwbtn" id="spw-mage" onclick="queueSpawn('mage')">🧙 เมจ</div>
+      <div class="spwbtn" id="spw-bat" onclick="queueSpawn('bat')">🦇 ค้างคาว</div>
       <div class="spwbtn" id="spw-boss" onclick="queueSpawn('boss')">👹 บอสปีศาจ</div>
     </div>
     <div class="cplabel" id="spawn-queue-txt" style="color:#ffcc02;font-size:5px;min-height:8px;"></div>
@@ -325,6 +357,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;touch-action:no
   </div>
   <div class="mbtns">
     <button class="mbtn primary" onclick="startGame()" ontouchstart="startGame()">▶ เริ่มเกม</button>
+    <button class="mbtn" onclick="openGacha()" ontouchstart="openGacha()" style="background:rgba(255,68,170,0.15);border-color:#ff44aa;color:#ff88cc;" id="gacha-btn">🎲 สุ่มสกิน</button>
     <button class="mbtn" onclick="openShop()" ontouchstart="openShop()" style="background:rgba(0,200,255,0.15);border-color:#00ccff;color:#00eeff;" id="shop-btn">🛒 ร้านค้า</button>
     <button class="mbtn" onclick="openSettings()" ontouchstart="openSettings()" style="background:rgba(92,58,255,0.2);border-color:#5c3aff;color:#9c7cff;">⚙️ ตั้งค่า</button>
     <button class="mbtn" onclick="openStats()" ontouchstart="openStats()" style="background:rgba(255,204,0,0.15);border-color:#ffcc02;color:#ffcc02;">🏆 สถิติ</button>
@@ -376,6 +409,55 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;touch-action:no
     <div class="abtn" id="dpad-right" style="background:rgba(92,58,255,0.2);border:2px solid #5c3aff;color:#9c7cff;font-size:18px;" ontouchstart="dpadStart('right')" ontouchend="dpadEnd('right')">▶</div>
   </div>
 </div>
+<!-- GACHA MODAL -->
+<div class="modal" id="gachaModal">
+  <h1 id="gacha-title" style="background:linear-gradient(135deg,#ffcc02,#ff44aa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">🎲 สุ่มสกิน</h1>
+  <div id="gacha-gems" style="font-family:'Press Start 2P',monospace;font-size:7px;color:#ffcc02;text-align:center;">💎 0</div>
+  <div id="gacha-collection" style="width:100%;"></div>
+  <!-- gacha result popup -->
+  <div id="gacha-result" style="display:none;flex-direction:column;align-items:center;gap:8px;
+    width:100%;padding:10px;background:rgba(0,0,0,0.5);border-radius:10px;margin-bottom:6px;">
+    <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#ffcc02;">✨ ผลการสุ่ม!</div>
+    <div id="gacha-result-box"></div>
+  </div>
+  <div class="mbtns">
+    <button class="mbtn" onclick="doGacha(1)" ontouchstart="doGacha(1)"
+      id="gacha-price-1"
+      style="background:rgba(255,204,0,0.15);border:1.5px solid #ffcc02;color:#ffcc02;">🎲 ×1 — 💎200</button>
+    <button class="mbtn" onclick="doGacha(10)" ontouchstart="doGacha(10)"
+      id="gacha-price-10"
+      style="background:rgba(255,68,170,0.15);border:1.5px solid #ff44aa;color:#ff88cc;">🎲 ×10 — 💎2,000</button>
+    <button class="mbtn primary" onclick="closeGacha(event)" ontouchstart="closeGacha(event)" id="gacha-close">✅ ปิด</button>
+  </div>
+</div>
+
+<!-- GACHA MODAL -->
+
+      <div style="text-align:left;">
+        <div style="font-family:'Press Start 2P',monospace;font-size:6px;color:#9c7cff;">สกินปัจจุบัน</div>
+        <div id="skin-current-name" style="font-family:'Orbitron',sans-serif;font-size:13px;font-weight:700;color:#ffcc02;"></div>
+        <div id="gacha-gems" style="font-family:'Press Start 2P',monospace;font-size:7px;color:#00eeff;">💎 0</div>
+      </div>
+    </div>
+    <!-- Rates -->
+    <div id="gacha-rates" style="text-align:center;line-height:2;padding:4px;"></div>
+    <!-- Result -->
+    <div id="gacha-result" style="display:none;width:100%;"></div>
+    <!-- Buttons -->
+    <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;">
+      <button class="mbtn" onclick="doGacha(1)" ontouchstart="doGacha(1)"
+        style="background:rgba(255,204,0,0.15);border-color:#ffcc02;color:#ffcc02;">
+        🎲 สุ่ม ×1<br><span style="font-size:5px">💎 200</span></button>
+      <button class="mbtn" onclick="doGacha(10)" ontouchstart="doGacha(10)"
+        style="background:rgba(255,100,0,0.15);border-color:#ff6600;color:#ff8833;">
+        🎲 สุ่ม ×10<br><span style="font-size:5px">💎 2000</span></button>
+    </div>
+  </div>
+  <div class="mbtns" style="margin-top:4px;">
+    <button class="mbtn primary" onclick="closeGacha(event)" ontouchstart="closeGacha(event)">✅ ปิด</button>
+  </div>
+</div>
+
 <!-- RESET CONFIRM MODAL -->
 <div class="modal" id="resetModal">
   <h1 style="font-size:clamp(16px,4vw,28px);background:linear-gradient(135deg,#ff2040,#ff6060);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">⚠️ รีเซ็ต?</h1>
@@ -430,6 +512,7 @@ setTimeout(()=>{
   applyLang();
   updateGemsHUD();
   updateWeaponBar();
+  updateXPHUD();
   ctrlType=loadCtrl();
   setCtrl(ctrlType);
 },200);
@@ -478,10 +561,10 @@ const LANG={
     language:'🌐 ภาษา',
     w0:'ดาบไม้',w1:'ดาบเหล็ก',w2:'ดาบทอง',w3:'ดาบเพชร',
     w4:'ค้อนไม้',w5:'ค้อนเหล็ก',w6:'ค้อนทอง',w7:'ค้อนยักษ์',
-    w8:'ปืนธรรมดา',w9:'ปืนมิติ',
+    w8:'ปืนธรรมดา',w9:'ปืนมิติ',w10:'ธนูค้างคาว',w10:'🦇 ปืนค้างคาว',
     diffBadge:(l,m)=>`${l} — ดาเมจที่รับ ×${m}`,
     queue:'คิว: ',
-    spawnList:{goblin:'👺 กอบลิน',skeleton:'💀 สเกเลตัน',mage:'🧙 เมจ',boss:'👹 บอสปีศาจ'},
+    spawnList:{goblin:'👺 กอบลิน',skeleton:'💀 สเกเลตัน',mage:'🧙 เมจ',bat:'🦇 ค้างคาว',boss:'👹 บอสปีศาจ'},
     survived:'เอาชีวิตรอดได้',died:'พลังชีวิตหมด',
   },
   en:{
@@ -502,10 +585,10 @@ const LANG={
     language:'🌐 Language',
     w0:'Wood Sword',w1:'Iron Sword',w2:'Gold Sword',w3:'Diamond Sword',
     w4:'Wood Hammer',w5:'Iron Hammer',w6:'Gold Hammer',w7:'Giant Hammer',
-    w8:'Pistol',w9:'Void Gun',
+    w8:'Pistol',w9:'Void Gun',w10:'Bat Bow',w10:'🦇 Bat Hunter',
     diffBadge:(l,m)=>`${l} — Damage taken ×${m}`,
     queue:'Queue: ',
-    spawnList:{goblin:'👺 Goblin',skeleton:'💀 Skeleton',mage:'🧙 Mage',boss:'👹 Demon Boss'},
+    spawnList:{goblin:'👺 Goblin',skeleton:'💀 Skeleton',mage:'🧙 Mage',bat:'🦇 Bat',boss:'👹 Demon Boss'},
     survived:'Survived',died:'HP depleted',
   }
 };
@@ -541,6 +624,7 @@ function applyLang(){
   const sg=document.getElementById('spw-goblin');   if(sg)sg.textContent=sl.goblin;
   const ss=document.getElementById('spw-skeleton'); if(ss)ss.textContent=sl.skeleton;
   const sm=document.getElementById('spw-mage');     if(sm)sm.textContent=sl.mage;
+  const sbat=document.getElementById('spw-bat');    if(sbat)sbat.textContent=sl.bat;
   const sb=document.getElementById('spw-boss');     if(sb)sb.textContent=sl.boss;
   // HUD
   const labels=document.querySelectorAll('.hlabel');
@@ -557,10 +641,10 @@ function applyLang(){
   // pause button
   const pbtn=document.getElementById('pause-btn');
   if(pbtn)pbtn.textContent=T('pause');
-  // weapon names
-  for(let i=0;i<10;i++){
+  // weapon names (0-10)
+  for(let i=0;i<11;i++){
     const el=document.querySelector(`#ws${i} .wn`);
-    if(el)el.textContent=T('w'+i);
+    if(el)el.textContent=T('w'+i)||'';
   }
   // boss
   const bn=document.getElementById('boss-name');   if(bn)bn.textContent=T('bossName');
@@ -581,6 +665,8 @@ function applyLang(){
   const len2=document.getElementById('lang-en');
   if(lth)lth.classList.toggle('sel',curLang==='th');
   if(len2)len2.classList.toggle('sel',curLang==='en');
+  // XP HUD
+  updateXPHUD();
   // shop
   const shopT=document.getElementById('shop-title');if(shopT)shopT.textContent=curLang==='en'?'🛒 Shop':'🛒 ร้านค้า';
   const shopC=document.getElementById('shop-close');if(shopC)shopC.textContent=curLang==='en'?'✅ Close':'✅ ปิด';
@@ -608,23 +694,18 @@ function applyLang(){
   if(resetCfm)resetCfm.textContent=curLang==='en'?'🗑️ Confirm Reset':'🗑️ ยืนยัน รีเซ็ต';
   const resetCnl=document.getElementById('reset-cancel-btn');
   if(resetCnl)resetCnl.textContent=curLang==='en'?'✖️ Cancel':'✖️ ยกเลิก';
+  const gachaBtn=document.getElementById('gacha-btn');
+  if(gachaBtn)gachaBtn.textContent=curLang==='en'?'🎲 Gacha':'🎲 สุ่มสกิน';
+  const gachaT=document.getElementById('gacha-title');
+  if(gachaT)gachaT.textContent=curLang==='en'?'🎲 Skin Gacha':'🎲 สุ่มสกิน';
+  const gachaC=document.getElementById('gacha-close');
+  if(gachaC)gachaC.textContent=curLang==='en'?'✅ Close':'✅ ปิด';
+  if(document.getElementById('gachaModal').classList.contains('show'))renderGacha();
   if(document.getElementById('shopModal').classList.contains('show'))renderShop();
   if(document.getElementById('statsModal').classList.contains('show'))renderStats();
 }
 function setLang(l){curLang=l;applyLang();}
 
-const WEAPONS=[
-  {type:'sword', dmg:15,range:65, cdMax:400,color:'#c8860a',kb:6},
-  {type:'sword', dmg:26,range:72, cdMax:340,color:'#cccccc',kb:7},
-  {type:'sword', dmg:40,range:80, cdMax:285,color:'#FFD700',kb:8},
-  {type:'sword', dmg:58,range:90, cdMax:235,color:'#00eeff',kb:9},
-  {type:'hammer',dmg:24,range:58, cdMax:620,color:'#c8860a',kb:13},
-  {type:'hammer',dmg:40,range:65, cdMax:560,color:'#cccccc',kb:17},
-  {type:'hammer',dmg:56,range:72, cdMax:510,color:'#FFD700',kb:22},
-  {type:'hammer',dmg:78,range:82, cdMax:730,color:'#ff6b35',kb:30},
-  {type:'gun',   dmg:32,range:380,cdMax:480,color:'#888',bs:15},
-  {type:'gun',   dmg:60,range:520,cdMax:830,color:'#aa44ff',bs:20,pierce:true},
-];
 const DODGE_MAX=1100;
 
 // ── Game state ───────────────────────────────────────────────────
@@ -668,9 +749,25 @@ let gems=loadGems();
 let ownedWeapons=loadOwned();
 
 // ราคาอาวุธ (เพชร)
-const WP_PRICE=[0,8,18,35, 12,25,45,80, 20,55];
-// gem rewards
-const GEM_REWARD={goblin:2,skeleton:2,mage:1,boss:5};
+const WEAPONS=[
+  {type:'sword', dmg:15, range:65, cdMax:400,color:'#c8860a',kb:6},
+  {type:'sword', dmg:26, range:72, cdMax:340,color:'#cccccc',kb:7},
+  {type:'sword', dmg:40, range:80, cdMax:285,color:'#FFD700',kb:8},
+  {type:'sword', dmg:58, range:90, cdMax:235,color:'#00eeff',kb:9},
+  {type:'hammer',dmg:24, range:58, cdMax:620,color:'#c8860a',kb:13},
+  {type:'hammer',dmg:40, range:65, cdMax:560,color:'#cccccc',kb:17},
+  {type:'hammer',dmg:56, range:72, cdMax:510,color:'#FFD700',kb:22},
+  {type:'hammer',dmg:78, range:82, cdMax:730,color:'#ff6b35',kb:30},
+  {type:'gun',   dmg:32, range:380,cdMax:480,color:'#888',   bs:15},
+  {type:'gun',   dmg:60, range:520,cdMax:830,color:'#aa44ff',bs:20,pierce:true},
+  {type:'batgun',dmg:90, range:600,cdMax:600,color:'#ff44aa',bs:22,batOnly:true}, // อาวุธพิเศษยิงค้างคาว
+];
+// ราคาอาวุธ (เพชร) — แพงขึ้นตามความแรง
+const WP_PRICE= [0,  30,  80, 180,  50, 120, 250, 500, 100, 400, 300];
+// เวลขั้นต่ำ
+const WP_LEVEL= [1,   3,   6,  20,   4,   8,  14,  20,   5,  18,  10];
+const GEM_REWARD={goblin:2,skeleton:2,mage:1,bat:1,boss:5};
+const XP_REWARD= {goblin:2,skeleton:2,mage:1,bat:3,boss:10};
 
 function addGems(n){gems+=n;saveGems(gems);updateGemsHUD();}
 function updateGemsHUD(){
@@ -695,8 +792,12 @@ function doReset(e){
   localStorage.removeItem(OWN_KEY);
   localStorage.removeItem(SCORE_KEY);
   localStorage.removeItem(CTRL_KEY);
-  // reset state
-  gems=0;ownedWeapons=[0];selWeapon=0;
+  localStorage.removeItem(XP_KEY);
+  localStorage.removeItem(SKIN_KEY);
+  localStorage.removeItem(SKIN_EQUIP_KEY);
+  gems=0;ownedWeapons=[0];selWeapon=0;totalXP=0;
+  ownedSkins=['default'];equippedSkin='default';
+  updateXPHUD();
   updateGemsHUD();
   updateWeaponBar();
   document.getElementById('ws0').classList.add('active');
@@ -720,28 +821,34 @@ function renderShop(){
   const owned=loadOwned();
   const wpNames={th:['ดาบไม้','ดาบเหล็ก','ดาบทอง','ดาบเพชร','ค้อนไม้','ค้อนเหล็ก','ค้อนทอง','ค้อนยักษ์','ปืนธรรมดา','ปืนมิติ'],
     en:['Wood Sword','Iron Sword','Gold Sword','Diamond Sword','Wood Hammer','Iron Hammer','Gold Hammer','Giant Hammer','Pistol','Void Gun']};
-  const emojis=['🗡️','⚔️','🌟','💎','🔨','🪓','⚒️','🔱','🔫','💥'];
+  const emojis=['🗡️','⚔️','🌟','💎','🔨','🪓','⚒️','🔱','🔫','💥','🦇'];
   const names=wpNames[curLang]||wpNames.th;
-  let html=`<div style="font-family:'Press Start 2P',monospace;font-size:7px;color:#ffcc02;text-align:center;margin-bottom:8px;">💎 ${gems}</div>`;
+  const playerLv=getLevel(totalXP);
+  let html=`<div style="font-family:'Press Start 2P',monospace;font-size:7px;color:#ffcc02;text-align:center;margin-bottom:8px;">💎 ${gems} &nbsp;|&nbsp; ⭐ Lv.${playerLv}</div>`;
   html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;width:100%;">';
-  for(let i=0;i<10;i++){
+  for(let i=0;i<11;i++){
     const isOwned=owned.includes(i);
     const price=WP_PRICE[i];
-    const canAfford=gems>=price;
-    const color=isOwned?'#00ff88':canAfford?'#ffcc02':'#555';
-    const bg=isOwned?'rgba(0,255,136,0.1)':canAfford?'rgba(255,204,0,0.1)':'rgba(80,80,80,0.1)';
+    const reqLv=WP_LEVEL[i]||1;
+    const canAfford=gems>=price&&playerLv>=reqLv;
+    const locked=playerLv<reqLv&&!isOwned;
+    const color=isOwned?'#00ff88':locked?'#555':canAfford?'#ffcc02':'#aa8800';
+    const bg=isOwned?'rgba(0,255,136,0.1)':locked?'rgba(40,40,40,0.2)':'rgba(255,204,0,0.08)';
+    const isBatWp=i===10;
     html+=`<div style="background:${bg};border:1.5px solid ${color};border-radius:8px;
       padding:7px;display:flex;align-items:center;justify-content:space-between;gap:4px;
       font-family:'Press Start 2P',monospace;">
       <span style="font-size:16px">${emojis[i]}</span>
-      <span style="font-size:5px;color:#ddd;flex:1;line-height:1.6">${names[i]}</span>
+      <span style="font-size:5px;color:#ddd;flex:1;line-height:1.6">${names[i]}${isBatWp?'<br><span style="color:#ff44aa">🦇 only</span>':''}${reqLv>1?'<br><span style="color:'+(locked?'#ff4444':'#00ff88')+'">Lv.'+reqLv+'+'+'</span>':''}</span>
       ${isOwned
         ?`<span style="font-size:6px;color:#00ff88">✅</span>`
+        :locked
+        ?`<span style="font-size:6px;color:#555">🔒Lv${reqLv}</span>`
         :`<button onclick="buyWeapon(${i})" ontouchstart="buyWeapon(${i})"
           style="font-family:'Press Start 2P',monospace;font-size:5px;
-          padding:4px 6px;border-radius:5px;border:1px solid ${canAfford?'#ffcc02':'#555'};
+          padding:4px 6px;border-radius:5px;border:1px solid ${canAfford?'#ffcc02':'#aa8800'};
           background:${canAfford?'rgba(255,204,0,0.2)':'rgba(80,80,80,0.1)'};
-          color:${canAfford?'#ffcc02':'#555'};cursor:pointer;">
+          color:${canAfford?'#ffcc02':'#aa8800'};cursor:pointer;">
           💎${price}</button>`}
     </div>`;
   }
@@ -766,20 +873,23 @@ function buyWeapon(i){
 
 function updateWeaponBar(){
   const owned=loadOwned();
-  for(let i=0;i<10;i++){
+  const playerLv=getLevel(totalXP);
+  for(let i=0;i<11;i++){
     const el=document.getElementById('ws'+i);
     if(!el)continue;
-    if(owned.includes(i)){
+    const isOwned=owned.includes(i);
+    const lvOk=playerLv>=WP_LEVEL[i];
+    // ลบ lock icon เก่า
+    el.querySelectorAll('.lock-icon').forEach(l=>l.remove());
+    if(isOwned&&lvOk){
       el.style.opacity='1';el.style.pointerEvents='all';
-      el.querySelector('.lock-icon')&&el.querySelector('.lock-icon').remove();
     }else{
-      el.style.opacity='0.4';el.style.pointerEvents='none';
-      if(!el.querySelector('.lock-icon')){
-        const lock=document.createElement('div');
-        lock.className='lock-icon';
-        lock.style.cssText='position:absolute;top:1px;left:1px;font-size:8px;';
-        lock.textContent='🔒';el.appendChild(lock);
-      }
+      el.style.opacity='0.35';el.style.pointerEvents='none';
+      const lock=document.createElement('div');
+      lock.className='lock-icon';
+      lock.style.cssText='position:absolute;top:1px;left:1px;font-size:8px;line-height:1;';
+      lock.textContent=isOwned&&!lvOk?`⭐${WP_LEVEL[i]}`:'🔒';
+      el.appendChild(lock);
     }
   }
 }
@@ -951,9 +1061,17 @@ function selDiff(i){
 }
 function getDmgMult(){return DIFF_CFG[curDiff].mult;}
 let customTime=5;
-function adjTime(d){customTime=Math.max(1,Math.min(60,customTime+d));customTimeSec=customTime*60;document.getElementById('cpTime').textContent=customTime;}
+let customModeActive=false; // flag บอกว่าเล่น custom mode จริงๆ
+function isCustomMode(){return customModeActive;}
+function adjTime(d){
+  customTime=Math.max(1,Math.min(60,customTime+d));
+  customTimeSec=customTime*60;
+  document.getElementById('cpTime').textContent=customTime;
+  customModeActive=true;
+}
 function queueSpawn(t){
   pendingSpawns.push(t);
+  customModeActive=true;
   document.getElementById('spawn-queue-txt').textContent='คิว: '+pendingSpawns.map(x=>({goblin:'👺',skeleton:'💀',mage:'🧙',boss:'👹'}[x])).join(' ');
 }
 
@@ -1017,11 +1135,26 @@ function doDodge(){
 function doAttack(){
   if(!gameRunning||gamePaused||attackCd>0)return;
   const wp=WEAPONS[selWeapon];attackCd=wp.cdMax;
-  if(wp.type==='gun'){
-    bullets.push({x:player.x+player.facing*player.r,y:player.y,vx:player.facing*wp.bs,vy:0,
-      dmg:wp.dmg,range:wp.range,traveled:0,color:wp.color,pierce:wp.pierce||false,owner:'player'});
+  if(wp.type==='gun'||wp.type==='batgun'){
+    let bvx=player.facing*(wp.bs||15),bvy=0;
+    // batgun — auto lock หาค้างคาวที่ใกล้ที่สุด
+    if(wp.batOnly){
+      const bats=enemies.filter(e=>e.isBat);
+      if(bats.length>0){
+        const nearest=bats.reduce((a,b)=>
+          Math.hypot(b.x-player.x,b.y-player.y)<Math.hypot(a.x-player.x,a.y-player.y)?b:a);
+        const dx=nearest.x+nearest.w/2-player.x;
+        const dy=nearest.y+nearest.h/2-player.y;
+        const d=Math.hypot(dx,dy)||1;
+        bvx=(dx/d)*(wp.bs||22);bvy=(dy/d)*(wp.bs||22);
+      }
+    }
+    bullets.push({x:player.x+player.facing*player.r,y:player.y,
+      vx:bvx,vy:bvy,dmg:wp.dmg,range:wp.range,
+      traveled:0,color:wp.color,pierce:wp.pierce||false,
+      owner:'player',batOnly:wp.batOnly||false});
     spawnParticle(player.x+player.facing*player.r,player.y,wp.color,5);
-    wp.pierce?SFX.laser():SFX.gun();
+    wp.pierce?SFX.laser():(wp.batOnly?SFX.laser():SFX.gun());
   }else{
     swingAnim={timer:220,wp};
     wp.type==='hammer'?SFX.hammer():SFX.sword();
@@ -1111,6 +1244,7 @@ function killBoss(){
   addKillMsg(T('bossKill'));
   spawnDrop(boss.x+boss.w/2,boss.y);spawnDrop(boss.x+boss.w/2+20,boss.y);
   addGems(GEM_REWARD.boss);
+  addXP(XP_REWARD.boss,isCustomMode());
   document.getElementById('boss-hud').classList.remove('show');
   boss=null;bossBeam=null;bossWarnTimer=0;playerPosHistory=[];
   SFX.bossKill();
@@ -1264,8 +1398,241 @@ function updateBoss(dt){
 }
 
 // ── Enemies ──────────────────────────────────────────────────────
+// ── XP / Level System ───────────────────────────────────────────
+const XP_KEY='battleforge_xp';
+const MAX_LEVEL=25;
+// XP ที่ต้องการแต่ละเวล (สะสม)
+function xpForLevel(lv){return Math.floor(50*lv+20*(lv-1)*(lv-1));}
+
+function loadXP(){return parseInt(localStorage.getItem(XP_KEY))||0;}
+function saveXP(x){localStorage.setItem(XP_KEY,Math.max(0,x));}
+let totalXP=loadXP();
+
+function getLevel(xp){
+  let lv=1;
+  while(lv<MAX_LEVEL&&xp>=xpForLevel(lv))lv++;
+  return lv;
+}
+function getXPForCurrentLevel(xp){
+  const lv=getLevel(xp);
+  if(lv===1)return xp;
+  return xp-xpForLevel(lv-1);
+}
+function getXPNeeded(xp){
+  const lv=getLevel(xp);
+  if(lv>=MAX_LEVEL)return 0;
+  return xpForLevel(lv)-xpForLevel(lv-1);
+}
+
+function addXP(amount,isCustomMode=false){
+  if(isCustomMode)return; // custom mode ไม่ได้ XP
+  const oldLv=getLevel(totalXP);
+  totalXP+=amount;
+  saveXP(totalXP);
+  const newLv=getLevel(totalXP);
+  updateXPHUD();
+  if(newLv>oldLv){
+    showLevelUp(newLv);
+    SFX.heal();
+  }
+}
+
+function updateXPHUD(){
+  const lv=getLevel(totalXP);
+  const cur=getXPForCurrentLevel(totalXP);
+  const need=getXPNeeded(totalXP);
+  const pct=lv>=MAX_LEVEL?100:Math.floor(cur/need*100);
+  document.getElementById('xp-level').textContent=`Lv.${lv}`;
+  document.getElementById('xp-bar-fill').style.width=pct+'%';
+  document.getElementById('xp-txt').textContent=lv>=MAX_LEVEL?'MAX!!':`${cur}/${need} XP`;
+  // เปลี่ยนสี bar ตาม level
+  const fill=document.getElementById('xp-bar-fill');
+  if(lv>=20)fill.style.background='linear-gradient(90deg,#FFD700,#ffcc02)';
+  else if(lv>=15)fill.style.background='linear-gradient(90deg,#00aaff,#00eeff)';
+  else if(lv>=10)fill.style.background='linear-gradient(90deg,#00cc66,#00ff88)';
+  else fill.style.background='linear-gradient(90deg,#5c3aff,#aa66ff)';
+}
+
+function showLevelUp(lv){
+  const el=document.createElement('div');
+  el.className='level-up-popup';
+  el.textContent=`⭐ LEVEL UP! Lv.${lv}`;
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(),1600);
+  // อัปเดต weapon bar เพราะอาจปลดล็อกอาวุธใหม่
+  updateWeaponBar();
+}
+// ── Skin System ─────────────────────────────────────────────────
+const SKIN_KEY='battleforge_skin';
+const SKINS=[
+  {id:'red',   name:{th:'สีแดง',  en:'Red'},   color1:'#ff2020',color2:'#cc0000',color3:'#ff6060',glow:'#ff2020',rate:40},
+  {id:'pink',  name:{th:'สีชมพู', en:'Pink'},  color1:'#ff80cc',color2:'#dd44aa',color3:'#ffbbdd',glow:'#ff80cc',rate:30},
+  {id:'white', name:{th:'สีขาว',  en:'White'}, color1:'#f0f0ff',color2:'#aaaacc',color3:'#ffffff',glow:'#ccccff',rate:10},
+  {id:'green', name:{th:'สีเขียว',en:'Green'}, color1:'#44ff88',color2:'#00aa44',color3:'#88ffcc',glow:'#44ff88',rate:5},
+  {id:'blue',  name:{th:'สีฟ้า',  en:'Blue'},  color1:'#44aaff',color2:'#0066cc',color3:'#88ccff',glow:'#44aaff',rate:5},
+  {id:'gold',  name:{th:'สีทอง',  en:'Gold'},  color1:'#FFD700',color2:'#cc8800',color3:'#ffeeaa',glow:'#FFD700',rate:2},
+  {id:'purple',name:{th:'ม่วง(เริ่มต้น)',en:'Purple(Default)'},color1:'#c0a0ff',color2:'#7c5cff',color3:'#b090ff',glow:'#7c5cff',rate:0},
+];
+const GACHA_POOL=SKINS.filter(s=>s.rate>0);
+function loadSkin(){return localStorage.getItem(SKIN_KEY)||'purple';}
+function saveSkin(id){localStorage.setItem(SKIN_KEY,id);}
+let curSkin=loadSkin();
+function getSkin(){return SKINS.find(s=>s.id===curSkin)||SKINS[6];}
+
+function rollGacha(){
+  const total=GACHA_POOL.reduce((a,s)=>a+s.rate,0);
+  let r=Math.random()*total;
+  for(const s of GACHA_POOL){r-=s.rate;if(r<=0)return s;}
+  return GACHA_POOL[GACHA_POOL.length-1];
+}
+function doGacha(times){
+  const cost=times===1?200:2000;
+  if(gems<cost){SFX.hurt();return;}
+  gems-=cost;saveGems(gems);updateGemsHUD();
+  const results=[];
+  for(let i=0;i<times;i++)results.push(rollGacha());
+  showGachaResult(results);
+}
+const RARITY_COLOR={gold:'#FFD700',blue:'#44aaff',green:'#44ff88',white:'#e0e0ff',pink:'#ff80cc',red:'#ff5555'};
+function showGachaResult(results){
+  let html=`<div style="font-family:'Orbitron',sans-serif;font-size:11px;font-weight:900;color:#ffcc02;text-align:center;margin-bottom:6px;">🎲 ${curLang==='en'?'Results!':'ผลสุ่ม!'}</div>
+  <div style="display:grid;grid-template-columns:repeat(${results.length===1?1:results.length<=4?2:5},1fr);gap:5px;">`;
+  results.forEach(s=>{
+    const col=RARITY_COLOR[s.id]||'#fff';
+    html+=`<div style="text-align:center;padding:6px;border-radius:8px;background:rgba(255,255,255,0.05);border:2px solid ${col}">
+      <div style="width:32px;height:32px;border-radius:50%;margin:0 auto 3px;
+        background:radial-gradient(circle at 35% 35%,${s.color3},${s.color1},${s.color2});
+        box-shadow:0 0 12px ${s.glow}"></div>
+      <div style="font-family:'Press Start 2P',monospace;font-size:4px;color:${col};line-height:1.5">${s.name[curLang]||s.name.th}</div>
+    </div>`;
+  });
+  html+='</div>';
+  curSkin=results[results.length-1].id;saveSkin(curSkin);
+  document.getElementById('gacha-result').innerHTML=html;
+  document.getElementById('gacha-result').style.display='block';
+  renderGachaMenu();SFX.win();
+}
+function openGacha(){
+  SFX.uiClick();renderGachaMenu();
+  setTimeout(()=>document.getElementById('gachaModal').classList.add('show'),80);
+}
+function closeGacha(e){
+  if(e){e.stopPropagation();e.preventDefault();}
+  SFX.uiClick();
+  document.getElementById('gachaModal').classList.remove('show');
+  document.getElementById('gacha-result').style.display='none';
+}
+function renderGachaMenu(){
+  const skin=getSkin();
+  const prev=document.getElementById('skin-preview');
+  if(prev){prev.style.background=`radial-gradient(circle at 35% 35%,${skin.color3},${skin.color1},${skin.color2})`;prev.style.boxShadow=`0 0 20px ${skin.glow}`;}
+  const nameEl=document.getElementById('skin-current-name');
+  if(nameEl)nameEl.textContent=skin.name[curLang]||skin.name.th;
+  const gemEl=document.getElementById('gacha-gems');
+  if(gemEl)gemEl.textContent=`💎 ${gems}`;
+  const ratesEl=document.getElementById('gacha-rates');
+  if(ratesEl)ratesEl.innerHTML=GACHA_POOL.map(s=>`<span style="color:${RARITY_COLOR[s.id]};font-size:5px">${s.name[curLang]||s.name.th} ${s.rate}%</span>`).join(' · ');
+}
+
 // ── Highscore system ────────────────────────────────────────────
-const SCORE_KEY='battleforge_scores';
+// ── Skin System ──────────────────────────────────────────────────
+// removed duplicate SKIN_KEY
+const SKIN_KEY='battleforge_skins';
+const SKIN_EQUIP_KEY='battleforge_skin_equipped';
+const SKINS=[
+  {id:'red',    name:{th:'สีแดง',   en:'Red'},      rarity:'common',   chance:0.40,c1:'#ff8080',c2:'#ff2020',c3:'#880000',emoji:'🔴'},
+  {id:'pink',   name:{th:'สีชมพู',  en:'Pink'},     rarity:'uncommon', chance:0.30,c1:'#ffaacc',c2:'#ff44aa',c3:'#880044',emoji:'🩷'},
+  {id:'white',  name:{th:'สีขาว',   en:'White'},    rarity:'rare',     chance:0.10,c1:'#ffffff',c2:'#ccddff',c3:'#8899bb',emoji:'⚪'},
+  {id:'green',  name:{th:'สีเขียว', en:'Green'},    rarity:'rare',     chance:0.05,c1:'#88ff88',c2:'#22cc44',c3:'#006622',emoji:'🟢'},
+  {id:'blue',   name:{th:'สีฟ้า',   en:'Blue'},     rarity:'epic',     chance:0.05,c1:'#88ccff',c2:'#2288ff',c3:'#003388',emoji:'🔵'},
+  {id:'gold',   name:{th:'สีทอง',   en:'Gold'},     rarity:'legendary',chance:0.02,c1:'#ffe066',c2:'#ffaa00',c3:'#885500',emoji:'🌟'},
+  {id:'default',name:{th:'ม่วง',    en:'Purple'},   rarity:'default',  chance:0,   c1:'#c0a0ff',c2:'#7c5cff',c3:'#2e0e88',emoji:'🟣'},
+];
+const RARITY_COLOR={common:'#aaaaaa',uncommon:'#44cc44',rare:'#4488ff',epic:'#cc44ff',legendary:'#ffcc00',default:'#5c3aff'};
+const RARITY_NAME={
+  th:{common:'ธรรมดา',uncommon:'ไม่ธรรมดา',rare:'หายาก',epic:'มหากาพย์',legendary:'ในตำนาน',default:'เริ่มต้น'},
+  en:{common:'Common',uncommon:'Uncommon',rare:'Rare',epic:'Epic',legendary:'Legendary',default:'Default'}
+};
+function loadSkins(){try{return JSON.parse(localStorage.getItem(SKIN_KEY))||['default'];}catch{return['default'];}}
+function saveSkins(arr){localStorage.setItem(SKIN_KEY,JSON.stringify([...new Set(arr)]));}
+function loadEquipped(){return localStorage.getItem(SKIN_EQUIP_KEY)||'default';}
+function saveEquipped(id){localStorage.setItem(SKIN_EQUIP_KEY,id);}
+let ownedSkins=loadSkins();
+let equippedSkin=loadEquipped();
+function getSkinData(id){return SKINS.find(s=>s.id===id)||SKINS[6];}
+function rollSkin(){
+  const r=Math.random();let acc=0;
+  for(const s of SKINS){if(s.chance===0)continue;acc+=s.chance;if(r<acc)return s.id;}
+  return 'red';
+}
+function doGacha(times){
+  if(gems<200*times){SFX.hurt();return;}
+  gems-=200*times;saveGems(gems);updateGemsHUD();
+  const results=[];let gotNew=false;
+  for(let i=0;i<times;i++){
+    const id=rollSkin();results.push(id);
+    if(!ownedSkins.includes(id)){ownedSkins.push(id);gotNew=true;}
+  }
+  saveSkins(ownedSkins);
+  showGachaResult(results);
+  gotNew?SFX.win():SFX.uiClick();
+}
+function showGachaResult(results){
+  const box=document.getElementById('gacha-result-box');
+  let html='<div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center;">';
+  results.forEach(id=>{
+    const s=getSkinData(id);
+    const rc=RARITY_COLOR[s.rarity];
+    const rn=(RARITY_NAME[curLang]||RARITY_NAME.th)[s.rarity];
+    html+=`<div style="display:flex;flex-direction:column;align-items:center;gap:3px;
+      padding:8px;background:${rc}18;border:2px solid ${rc};border-radius:8px;min-width:65px;">
+      <div style="font-size:24px">${s.emoji}</div>
+      <div style="font-family:'Press Start 2P',monospace;font-size:4px;color:${rc}">${rn}</div>
+      <div style="font-family:'Press Start 2P',monospace;font-size:4px;color:#ddd">${s.name[curLang]||s.name.th}</div>
+    </div>`;
+  });
+  html+='</div>';
+  box.innerHTML=html;
+  document.getElementById('gacha-result').style.display='flex';
+}
+function openGacha(){
+  SFX.uiClick();renderGacha();
+  setTimeout(()=>document.getElementById('gachaModal').classList.add('show'),80);
+}
+function closeGacha(e){
+  if(e){e.stopPropagation();e.preventDefault();}
+  SFX.uiClick();
+  document.getElementById('gachaModal').classList.remove('show');
+  document.getElementById('gacha-result').style.display='none';
+}
+function equipSkin(id){
+  equippedSkin=id;saveEquipped(id);
+  renderGacha();SFX.uiSelect();
+}
+function renderGacha(){
+  const owned=loadSkins();
+  let html='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px;width:100%;margin-bottom:8px;">';
+  SKINS.forEach(s=>{
+    const have=owned.includes(s.id);
+    const eq=equippedSkin===s.id;
+    const rc=RARITY_COLOR[s.rarity];
+    html+=`<div onclick="${have?`equipSkin('${s.id}')`:'void 0'}" ontouchstart="${have?`equipSkin('${s.id}')`:'void 0'}"
+      style="display:flex;flex-direction:column;align-items:center;gap:2px;padding:5px;
+      background:${have?rc+'18':'rgba(40,40,40,0.3)'};
+      border:2px solid ${eq?'#ffcc02':have?rc:'#2a1a4e'};border-radius:8px;
+      cursor:${have?'pointer':'default'};opacity:${have?1:0.35};">
+      <div style="font-size:18px">${have?s.emoji:'❓'}</div>
+      <div style="font-family:'Press Start 2P',monospace;font-size:3.5px;color:${have?rc:'#555'}">${have?(s.name[curLang]||s.name.th):'???'}</div>
+      ${eq?'<div style="font-size:7px">✅</div>':''}
+    </div>`;
+  });
+  html+='</div>';
+  document.getElementById('gacha-collection').innerHTML=html;
+  document.getElementById('gacha-price-1').textContent=curLang==='en'?'🎲 ×1 — 💎200':'🎲 ×1 — 💎200';
+  document.getElementById('gacha-price-10').textContent=curLang==='en'?'🎲 ×10 — 💎2,000':'🎲 ×10 — 💎2,000';
+  document.getElementById('gacha-gems').textContent='💎 '+gems;
+}
+
 function loadScores(){try{return JSON.parse(localStorage.getItem(SCORE_KEY))||{};}catch{return {};}}
 function saveScore(diffIdx,s){
   const data=loadScores();
@@ -1279,12 +1646,20 @@ function clearStats(e){
 }
 function renderStats(){
   const data=loadScores();
+  const lv=getLevel(totalXP);
+  const cur=getXPForCurrentLevel(totalXP);
+  const need=getXPNeeded(totalXP);
   const dm=[0.5,1.0,1.8,3.0,5.0];
   const dnames={th:['ง่าย','ปกติ','ยาก','ยากมาก','นรกแตก'],en:['Easy','Normal','Hard','Very Hard','Hell']};
   const names=dnames[curLang]||dnames.th;
   const emojis=['😊','😐','😤','😰','💀'];
   const colors=['#00ff88','#9c7cff','#ffbb44','#ff7744','#ff4466'];
-  let html='';
+  let html=`<div style="text-align:center;margin-bottom:8px;padding:8px;
+    background:rgba(255,204,0,0.08);border-radius:8px;border:1px solid #ffcc0233;">
+    <div style="font-family:'Orbitron',sans-serif;font-size:16px;font-weight:900;color:#ffcc02;">⭐ Lv.${lv}</div>
+    <div style="font-family:'Press Start 2P',monospace;font-size:6px;color:#9c7cff;margin-top:3px;">${lv>=MAX_LEVEL?'MAX LEVEL!!':cur+' / '+need+' XP'}</div>
+    <div style="font-family:'Press Start 2P',monospace;font-size:5px;color:#5c3aff;margin-top:2px;">${curLang==='en'?'Total XP:':'XP รวม:'} ${totalXP}</div>
+  </div>`;
   for(let i=0;i<5;i++){
     const best=data[i]||0;
     html+=`<div style="display:flex;justify-content:space-between;align-items:center;
@@ -1298,15 +1673,24 @@ function renderStats(){
 }
 
 const ECFG={
-  goblin:  {hp:60,maxHp:60,spd:1.8,dmg:22, color:'#3a9a3a',w:26,h:36,emoji:'👺',reward:10},
-  skeleton:{hp:85,maxHp:85,spd:1.3,dmg:32, color:'#d0d0d0',w:26,h:40,emoji:'💀',reward:15},
-  mage:    {hp:55,maxHp:55,spd:1.0,dmg:28, color:'#9b4fd8',w:26,h:40,emoji:'🧙',reward:25,ranged:true},
+  goblin:  {hp:60, maxHp:60, spd:1.8,dmg:22,color:'#3a9a3a',w:26,h:36,emoji:'👺',reward:10,isBat:false},
+  skeleton:{hp:85, maxHp:85, spd:1.3,dmg:32,color:'#d0d0d0',w:26,h:40,emoji:'💀',reward:15,isBat:false},
+  mage:    {hp:55, maxHp:55, spd:1.0,dmg:28,color:'#9b4fd8',w:26,h:40,emoji:'🧙',reward:25,ranged:true,isBat:false},
+  bat:     {hp:40, maxHp:40, spd:2.2,dmg:24,color:'#884488',w:28,h:20,emoji:'🦇',reward:12,isBat:true},
 };
 function spawnEnemy(type){
   if(type==='boss'){spawnBoss();return;}
-  const side=Math.random()<0.5?0:W;
   const c=ECFG[type];
-  enemies.push({x:side,y:-60,vx:0,vy:0,onGround:false,type,...c,hp:c.hp,shootCd:0,kbV:0});
+  if(!c)return;
+  if(c.isBat){
+    // ค้างคาวเกิดจากด้านบน สุ่มตำแหน่ง x
+    const x=W*.1+Math.random()*W*.8;
+    enemies.push({x,y:-30,vx:0,vy:0,onGround:false,type,...c,hp:c.hp,shootCd:0,kbV:0,
+      flyAngle:Math.random()*Math.PI*2,flySpeed:c.spd});
+  }else{
+    const side=Math.random()<0.5?0:W;
+    enemies.push({x:side,y:-60,vx:0,vy:0,onGround:false,type,...c,hp:c.hp,shootCd:0,kbV:0});
+  }
 }
 function killEnemy(e){
   score+=e.reward;document.getElementById('scoreVal').textContent=score;
@@ -1314,12 +1698,38 @@ function killEnemy(e){
   addKillMsg(`${e.emoji} +${e.reward}`);
   if(Math.random()<0.3)spawnDrop(e.x+e.w/2,e.y);
   const g=GEM_REWARD[e.type]||1;addGems(g);
+  const xp=XP_REWARD[e.type]||2;addXP(xp,isCustomMode());
   SFX.kill();
 }
 function updateEnemies(dt){
   const px=player.x,py=player.y;
   enemies.forEach(e=>{
     const ex=e.x+e.w/2,ey=e.y+e.h/2,dist=Math.hypot(ex-px,ey-py);
+
+    // ── BAT AI (บินได้ ไม่มี gravity) ──────────────────────────
+    if(e.isBat){
+      if(e.kbV){e.vx=e.kbV;e.vy=-2;e.kbV*=0.80;if(Math.abs(e.kbV)<0.12)e.kbV=0;}
+      else{
+        // บินเข้าหาผู้เล่นโดยตรง
+        const dx=px-ex,dy=py-ey,d=Math.hypot(dx,dy)||1;
+        e.vx+=(dx/d*e.spd-e.vx)*0.08;
+        e.vy+=(dy/d*e.spd-e.vy)*0.08;
+        // กัดเมื่อใกล้
+        if(dist<28&&player.invincible<=0){
+          let dmg=e.dmg*(dt/1000)*getDmgMult();
+          if(armor>0){const ab=Math.min(armor,dmg*.5);armor=Math.max(0,armor-ab);dmg-=ab;}
+          player.hp-=dmg;player.invincible=400;
+          if(dmg>0.5)showDmg(player.x,player.y-player.r,dmg,'player');
+          updateHPHUD();if(player.hp<=0)endGame(false);
+        }
+      }
+      // ค้างคาวไม่ใช้ physics ปกติ แค่จำกัดพื้นที่
+      e.x+=e.vx;e.y+=e.vy;
+      if(e.x<0)e.x=0;if(e.x>W)e.x=W;
+      if(e.y<0)e.y=0;if(e.y>H-60)e.y=H-60;
+      return;
+    }
+
     if(e.kbV){e.vx=e.kbV;e.kbV*=0.80;if(Math.abs(e.kbV)<0.12)e.kbV=0;}
     else if(e.ranged){
       if(dist<160)e.vx=ex>px?e.spd*.4:-e.spd*.4;
@@ -1350,9 +1760,10 @@ function updateBullets(){
     let hit=false;
     if(b.owner==='player'){
       enemies.forEach(e=>{
+        if(b.batOnly&&!e.isBat)return; // batgun โดนแค่ค้างคาว
         if(b.x>e.x&&b.x<e.x+e.w&&b.y>e.y&&b.y<e.y+e.h){
           e.hp-=b.dmg;spawnParticle(b.x,b.y,'#ff4d6d',5);
-          showDmg(b.x,b.y, b.dmg);
+          showDmg(b.x,b.y,b.dmg);
           if(e.hp<=0)killEnemy(e);if(!b.pierce)hit=true;}
       });
       enemies=enemies.filter(e=>e.hp>0);
@@ -1455,9 +1866,10 @@ function drawPlayer(){
   if(p.invincible>0&&Math.floor(Date.now()/70)%2===0)return;
   ctx.save();ctx.translate(p.x,p.y);
   ctx.fillStyle='rgba(0,0,0,0.18)';ctx.beginPath();ctx.ellipse(0,p.r+4,p.r*.8,5,0,0,Math.PI*2);ctx.fill();
-  ctx.shadowColor='#7c5cff';ctx.shadowBlur=18;
+  const sk=getSkinData(equippedSkin);
+  ctx.shadowColor=sk.c2;ctx.shadowBlur=18;
   const bg=ctx.createRadialGradient(-p.r*.3,-p.r*.3,2,0,0,p.r);
-  bg.addColorStop(0,'#c0a0ff');bg.addColorStop(0.55,'#7c5cff');bg.addColorStop(1,'#2e0e88');
+  bg.addColorStop(0,sk.c1);bg.addColorStop(0.55,sk.c2);bg.addColorStop(1,sk.c3);
   ctx.fillStyle=bg;ctx.beginPath();ctx.arc(0,0,p.r,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;
   if(armor>0){ctx.strokeStyle=`rgba(0,170,255,${Math.min(1,armor/100*.7+0.2)})`;ctx.lineWidth=3;
     ctx.shadowColor='#00aaff';ctx.shadowBlur=8;ctx.beginPath();ctx.arc(0,0,p.r+3,0,Math.PI*2);ctx.stroke();ctx.shadowBlur=0;}
@@ -1709,7 +2121,11 @@ function gameLoop(ts){
   // Auto spawn enemies
   spawnTimer+=dt;
   if(spawnTimer>=spawnInterval&&enemies.length<10){
-    const types=['goblin','skeleton','mage'];
+    // ค้างคาวเริ่มออกหลัง 30 วิ
+    const elapsed2=customTimeSec-timeLeft;
+    const types=elapsed2>30
+      ?['goblin','skeleton','mage','bat','goblin','skeleton','bat','goblin','skeleton','mage']
+      :['goblin','skeleton','mage'];
     spawnEnemy(types[Math.floor(Math.random()*types.length)]);
     spawnTimer=0;spawnInterval=Math.max(1400,spawnInterval-10);
   }
@@ -1756,7 +2172,9 @@ function gameLoop(ts){
 
 // ── Controls ─────────────────────────────────────────────────────
 function selWp(i){
-  if(!loadOwned().includes(i)){SFX.hurt();return;}
+  const owned=loadOwned();
+  const playerLv=getLevel(totalXP);
+  if(!owned.includes(i)||playerLv<WP_LEVEL[i]){SFX.hurt();return;}
   document.getElementById('ws'+selWeapon).classList.remove('active');
   selWeapon=i;document.getElementById('ws'+i).classList.add('active');
   SFX.uiWp();
@@ -1792,6 +2210,7 @@ function startGame(){
   if(document.getElementById('settingsModal').classList.contains('show'))return;
   if(document.getElementById('statsModal').classList.contains('show'))return;
   if(document.getElementById('resetModal').classList.contains('show'))return;
+  if(document.getElementById('gachaModal').classList.contains('show'))return;
   document.getElementById('menuModal').classList.remove('show');
   if(gameRunning)return;
   SFX.uiStart();
@@ -1807,6 +2226,7 @@ function _startGame(){
   gameRunning=true;gamePaused=false;
   score=0;timeLeft=customTimeSec;
   bullets=[];enemies=[];particles=[];drops=[];
+  pendingSpawns=[];customModeActive=false;
   swingAnim=null;attackCd=0;dodgeCd=0;
   spawnTimer=0;spawnInterval=3000;dropTimer=0;
   boss=null;bossBeam=null;bossSpawned=false;bossWarnTimer=0;
