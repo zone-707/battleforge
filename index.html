@@ -253,7 +253,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;touch-action:no
       <div id="xp-txt">0 / 50 XP</div>
     </div>
     <div style="text-align:right;display:flex;flex-direction:column;gap:2px;">
-      <div class="hlabel" id="gems-hud" style="color:#00eeff;font-size:8px;cursor:pointer;" onclick="openShop()" ontouchstart="openShop()">💎 0</div>
+      <div class="hlabel" id="gems-hud" style="color:#00eeff;font-size:8px;cursor:pointer;" onclick="openShop(event)" ontouchstart="openShop(event)">💎 0</div>
       <div class="hlabel">🏆</div>
       <div class="score-num" id="scoreVal">0</div>
     </div>
@@ -340,20 +340,21 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;touch-action:no
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;width:100%;max-width:320px;">
     <button class="mbtn primary" id="menu-start-btn" onclick="startGame()" ontouchstart="startGame()"
       style="grid-column:1/span 2;padding:10px;">▶ เริ่มเกม</button>
-    <button class="mbtn" onclick="openCustomMode()" ontouchstart="openCustomMode()"
+    <button class="mbtn" onclick="openCustomMode(event)" ontouchstart="openCustomMode(event)"
       style="background:rgba(92,58,255,0.2);border-color:#5c3aff;color:#9c7cff;padding:8px 4px;font-size:6px;"
       id="custom-btn">⚙️ กำหนดเอง</button>
-    <button class="mbtn" onclick="openGacha()" ontouchstart="openGacha()"
+    <button class="mbtn" onclick="openGacha(event)" ontouchstart="openGacha(event)"
       style="background:rgba(255,68,170,0.15);border-color:#ff44aa;color:#ff88cc;padding:8px 4px;font-size:6px;"
       id="gacha-btn">🎲 สุ่มสกิน</button>
-    <button class="mbtn" onclick="openShop()" ontouchstart="openShop()"
+    <button class="mbtn" onclick="openShop(event)" ontouchstart="openShop(event)"
       style="background:rgba(0,200,255,0.15);border-color:#00ccff;color:#00eeff;padding:8px 4px;font-size:6px;"
       id="shop-btn">🛒 ร้านค้า</button>
-    <button class="mbtn" onclick="openStats()" ontouchstart="openStats()"
+    <button class="mbtn" onclick="openStats(event)" ontouchstart="openStats(event)"
       style="background:rgba(255,204,0,0.15);border-color:#ffcc02;color:#ffcc02;padding:8px 4px;font-size:6px;"
       id="stats-btn">🏆 สถิติ</button>
-    <button class="mbtn" onclick="openSettings()" ontouchstart="openSettings()"
-      style="background:rgba(255,255,255,0.05);border-color:#555;color:#aaa;padding:8px 4px;font-size:6px;grid-column:1/span 2;">⚙️ ตั้งค่า</button>
+    <button class="mbtn" onclick="openSettings(event)" ontouchstart="openSettings(event)"
+      style="background:rgba(255,255,255,0.05);border-color:#555;color:#aaa;padding:8px 4px;font-size:6px;grid-column:1/span 2;"
+      id="settings-btn">⚙️ ตั้งค่า</button>
   </div>
 </div>
 
@@ -697,11 +698,11 @@ function applyLang(){
   const statsT=document.getElementById('stats-title');if(statsT)statsT.textContent=curLang==='en'?'🏆 Stats':'🏆 สถิติ';
   const statsC=document.getElementById('stats-close');if(statsC)statsC.textContent=curLang==='en'?'✅ Close':'✅ ปิด';
   const statsCl=document.getElementById('stats-clear');if(statsCl)statsCl.textContent=curLang==='en'?'🗑️ Clear':'🗑️ ล้างสถิติ';
-  const statsBtn2=document.querySelector('#menuModal .mbtn:last-child');if(statsBtn2)statsBtn2.textContent=curLang==='en'?'🏆 Stats':'🏆 สถิติ';
+  const statsBtn2=document.getElementById('stats-btn');if(statsBtn2)statsBtn2.textContent=curLang==='en'?'🏆 Stats':'🏆 สถิติ';
   // settings
   const settingsT=document.getElementById('settings-title');if(settingsT)settingsT.textContent=curLang==='en'?'⚙️ Settings':'⚙️ ตั้งค่า';
   const settingsC=document.getElementById('settings-close');if(settingsC)settingsC.textContent=curLang==='en'?'✅ Save':'✅ บันทึก';
-  const settingsBtn2=document.querySelector('#menuModal .mbtn:nth-child(3)');if(settingsBtn2)settingsBtn2.textContent=curLang==='en'?'⚙️ Settings':'⚙️ ตั้งค่า';
+  const settingsBtn2=document.getElementById('settings-btn');if(settingsBtn2)settingsBtn2.textContent=curLang==='en'?'⚙️ Settings':'⚙️ ตั้งค่า';
   // pause title
   const pauseTitle=document.getElementById('pause-title');if(pauseTitle)pauseTitle.textContent=curLang==='en'?'⏸ Paused':'⏸ หยุดเกม';
   const pauseResume=document.getElementById('pause-resume-btn');if(pauseResume)pauseResume.textContent=T('resume');
@@ -914,14 +915,15 @@ function startCustomGame(e){
   SFX.uiStart();
   setTimeout(()=>_startGame(),100);
 }
-function openShop(){
+function openShop(e){
+  if(e){e.stopPropagation();e.preventDefault();}
   SFX.uiClick();renderShop();
   setTimeout(()=>document.getElementById('shopModal').classList.add('show'),80);
 }
 function closeShop(e){if(e){e.stopPropagation();e.preventDefault();}SFX.uiClick();document.getElementById('shopModal').classList.remove('show');}
-function openSettings(){SFX.uiClick();setTimeout(()=>document.getElementById('settingsModal').classList.add('show'),80);}
+function openSettings(e){if(e){e.stopPropagation();e.preventDefault();}SFX.uiClick();setTimeout(()=>document.getElementById('settingsModal').classList.add('show'),80);}
 function closeSettings(e){if(e){e.stopPropagation();e.preventDefault();}SFX.uiClick();document.getElementById('settingsModal').classList.remove('show');}
-function openStats(){SFX.uiClick();renderStats();setTimeout(()=>document.getElementById('statsModal').classList.add('show'),80);}
+function openStats(e){if(e){e.stopPropagation();e.preventDefault();}SFX.uiClick();renderStats();setTimeout(()=>document.getElementById('statsModal').classList.add('show'),80);}
 function closeStats(e){if(e){e.stopPropagation();e.preventDefault();}SFX.uiClick();document.getElementById('statsModal').classList.remove('show');}
 
 function renderShop(){
@@ -1653,7 +1655,8 @@ function showGachaResult(results){
   box.innerHTML=html;
   document.getElementById('gacha-result').style.display='flex';
 }
-function openGacha(){
+function openGacha(e){
+  if(e){e.stopPropagation();e.preventDefault();}
   SFX.uiClick();renderGacha();
   setTimeout(()=>document.getElementById('gachaModal').classList.add('show'),80);
 }
@@ -2284,8 +2287,8 @@ function goMainMenu(){
   document.getElementById('menuModal').classList.add('show');
 }
 
-function startGame(){
-  // ป้องกันเริ่มเกมถ้า modal อื่นเปิดอยู่
+function startGame(e){
+  if(e){e.stopPropagation();e.preventDefault();}
   if(document.getElementById('shopModal').classList.contains('show'))return;
   if(document.getElementById('settingsModal').classList.contains('show'))return;
   if(document.getElementById('statsModal').classList.contains('show'))return;
