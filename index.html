@@ -3,7 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="BattleForge">
+<meta name="theme-color" content="#0a0516">
 <title>⚔️ BattleForge 2D</title>
+<link rel="manifest" href="data:application/json;charset=utf-8,%7B%22name%22%3A%22BattleForge%202D%22%2C%22short_name%22%3A%22BattleForge%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22fullscreen%22%2C%22background_color%22%3A%22%230a0516%22%2C%22theme_color%22%3A%22%230a0516%22%2C%22orientation%22%3A%22landscape%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%2C%253Csvg%2520xmlns%3D%2527http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%2527%2520viewBox%3D%2527%200%200%20100%20100%2527%253E%253Ctext%2520y%3D%2527.9em%2527%2520font-size%3D%252790%2527%253E%25E2%259A%2594%25EF%25B8%258F%253C%2Ftext%253E%253C%2Fsvg%253E%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%7D%5D%7D">
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Press+Start+2P&display=swap');
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
@@ -2432,6 +2438,24 @@ function endGame(survived){
     `${T('score')}: <span style="color:#ffcc02">${score}</span>`+
     (isNew&&score>0?`<br><span style="color:#00ff88;font-size:8px">🏆 Best!</span>`:`<br><span style="font-size:7px;color:#7c5cff">Best: ${best}</span>`);
   document.querySelector('.mbtn.primary').textContent=T('startGame');
+}
+</script>
+
+<script>
+// ── PWA Service Worker ───────────────────────────────────────────
+if('serviceWorker' in navigator){
+  const swCode=`
+    const CACHE='battleforge-v1';
+    self.addEventListener('install',e=>{
+      e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['./',location.href])));
+    });
+    self.addEventListener('fetch',e=>{
+      e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request)));
+    });
+  `;
+  const blob=new Blob([swCode],{type:'application/javascript'});
+  const swUrl=URL.createObjectURL(blob);
+  navigator.serviceWorker.register(swUrl).catch(()=>{});
 }
 </script>
 </body>
