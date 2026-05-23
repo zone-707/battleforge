@@ -377,8 +377,8 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;touch-action:no
 
     <div style="width:100%;height:1px;background:#2a1a4e;margin:2px 0;"></div>
 
-    <!-- UI Scale -->
-    <div class="cplabel" id="ui-scale-label" style="color:#ff88cc;">📐 ขนาด UI</div>
+    <!-- Game UI Scale -->
+    <div class="cplabel" id="ui-scale-label" style="color:#ff88cc;">🎮 ขนาด UI ในเกม</div>
     <div style="display:flex;align-items:center;gap:10px;width:100%;max-width:260px;">
       <button class="cpbtn" ontouchstart="adjUIScale(-0.1)" onclick="adjUIScale(-0.1)">−</button>
       <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;">
@@ -394,6 +394,25 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;touch-action:no
       <div class="diff-btn" id="scale-md" onclick="setUIScale(1.0)" ontouchstart="setUIScale(1.0)" style="font-size:6px;padding:5px 8px;border-color:#ff88cc;color:#ff88cc;">M</div>
       <div class="diff-btn" id="scale-lg" onclick="setUIScale(1.2)" ontouchstart="setUIScale(1.2)" style="font-size:6px;padding:5px 8px;border-color:#ff88cc44;color:#ff88cc88;">L</div>
       <div class="diff-btn" id="scale-xl" onclick="setUIScale(1.4)" ontouchstart="setUIScale(1.4)" style="font-size:6px;padding:5px 8px;border-color:#ff88cc44;color:#ff88cc88;">XL</div>
+    </div>
+
+    <!-- Menu Scale -->
+    <div class="cplabel" id="menu-scale-label" style="color:#88ccff;margin-top:4px;">📱 ขนาดหน้าเมนู</div>
+    <div style="display:flex;align-items:center;gap:10px;width:100%;max-width:260px;">
+      <button class="cpbtn" ontouchstart="adjMenuScale(-0.1)" onclick="adjMenuScale(-0.1)">−</button>
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;">
+        <input type="range" id="menu-scale-slider" min="0.6" max="1.4" step="0.1" value="1.0"
+          oninput="setMenuScale(parseFloat(this.value))"
+          style="width:100%;accent-color:#88ccff;">
+        <div id="menu-scale-val" style="font-family:'Press Start 2P',monospace;font-size:6px;color:#88ccff;">100%</div>
+      </div>
+      <button class="cpbtn" ontouchstart="adjMenuScale(0.1)" onclick="adjMenuScale(0.1)">+</button>
+    </div>
+    <div style="display:flex;gap:6px;">
+      <div class="diff-btn" id="mscale-sm" onclick="setMenuScale(0.7)" ontouchstart="setMenuScale(0.7)" style="font-size:6px;padding:5px 8px;border-color:#88ccff44;color:#88ccff88;">S</div>
+      <div class="diff-btn" id="mscale-md" onclick="setMenuScale(1.0)" ontouchstart="setMenuScale(1.0)" style="font-size:6px;padding:5px 8px;border-color:#88ccff;color:#88ccff;">M</div>
+      <div class="diff-btn" id="mscale-lg" onclick="setMenuScale(1.2)" ontouchstart="setMenuScale(1.2)" style="font-size:6px;padding:5px 8px;border-color:#88ccff44;color:#88ccff88;">L</div>
+      <div class="diff-btn" id="mscale-xl" onclick="setMenuScale(1.4)" ontouchstart="setMenuScale(1.4)" style="font-size:6px;padding:5px 8px;border-color:#88ccff44;color:#88ccff88;">XL</div>
     </div>
 
     <div style="width:100%;height:1px;background:#2a1a4e;margin:2px 0;"></div>
@@ -536,6 +555,7 @@ setTimeout(()=>{
   ctrlType=loadCtrl();
   setCtrl(ctrlType);
   applyUIScale();
+  applyMenuScale();
 },200);
 
 // ── Maps ────────────────────────────────────────────────────────
@@ -602,7 +622,7 @@ const LANG={
     won:'🏆 Victory!',lost:'💀 Defeated!',
     wonMsg:'You survived!',lostMsg:'HP depleted...',
     bossName:'👹 Demon Lord',bossComing:'👹 Boss is coming!',
-    bossKill:'👹 Boss defeated! +300',
+    bossKill:'👹 Boss defeated! +200',
     language:'🌐 Language',
     w0:'Wood Sword',w1:'Iron Sword',w2:'Gold Sword',w3:'Diamond Sword',
     w4:'Wood Hammer',w5:'Iron Hammer',w6:'Gold Hammer',w7:'Giant Hammer',
@@ -728,8 +748,10 @@ function applyLang(){
   const resetCnl=document.getElementById('reset-cancel-btn');
   if(resetCnl)resetCnl.textContent=curLang==='en'?'✖️ Cancel':'✖️ ยกเลิก';
   const uiScaleLabel=document.getElementById('ui-scale-label');
-  if(uiScaleLabel)uiScaleLabel.textContent=curLang==='en'?'📐 UI Size':'📐 ขนาด UI';
-  applyUIScale();
+  if(uiScaleLabel)uiScaleLabel.textContent=curLang==='en'?'🎮 Game UI Size':'🎮 ขนาด UI ในเกม';
+  const menuScaleLabel=document.getElementById('menu-scale-label');
+  if(menuScaleLabel)menuScaleLabel.textContent=curLang==='en'?'📱 Menu Size':'📱 ขนาดหน้าเมนู';
+  applyUIScale();applyMenuScale();
   const gachaBtn=document.getElementById('gacha-btn');
   if(gachaBtn)gachaBtn.textContent=curLang==='en'?'🎲 Gacha':'🎲 สุ่มสกิน';
   const gachaT=document.getElementById('gacha-title');
@@ -753,7 +775,40 @@ let timerInt=null,lastTs=0,spawnTimer=0,spawnInterval=3000,dropTimer=0;
 let armor=0,boss=null,bossSpawned=false,bossBeam=null,bossWarnTimer=0;
 let pendingSpawns=[];
 
-// ── UI Scale ─────────────────────────────────────────────────────
+// ── Menu Scale ───────────────────────────────────────────────────
+const MENU_SCALE_KEY='battleforge_menuscale';
+let menuScale=parseFloat(localStorage.getItem(MENU_SCALE_KEY))||1.0;
+
+function setMenuScale(v){
+  menuScale=Math.round(Math.max(0.6,Math.min(1.4,v))*10)/10;
+  localStorage.setItem(MENU_SCALE_KEY,menuScale);
+  applyMenuScale();
+  SFX.uiClick();
+}
+function adjMenuScale(d){setMenuScale(menuScale+d);}
+
+function applyMenuScale(){
+  // ปรับ modal หน้าเมนูหลัก
+  const menu=document.getElementById('menuModal');
+  if(menu){
+    menu.style.transform=`scale(${menuScale})`;
+    menu.style.transformOrigin='center center';
+  }
+  // อัปเดต slider
+  const slider=document.getElementById('menu-scale-slider');
+  if(slider)slider.value=menuScale;
+  const val=document.getElementById('menu-scale-val');
+  if(val)val.textContent=Math.round(menuScale*100)+'%';
+  // highlight
+  ['sm','md','lg','xl'].forEach((s,i)=>{
+    const v=[0.7,1.0,1.2,1.4][i];
+    const el=document.getElementById('mscale-'+s);
+    if(el){
+      el.style.borderColor=Math.abs(menuScale-v)<0.05?'#88ccff':'#88ccff44';
+      el.style.color=Math.abs(menuScale-v)<0.05?'#88ccff':'#88ccff66';
+    }
+  });
+}
 const SCALE_KEY='battleforge_uiscale';
 let uiScale=parseFloat(localStorage.getItem(SCALE_KEY))||1.0;
 
@@ -766,17 +821,16 @@ function setUIScale(v){
 function adjUIScale(d){setUIScale(uiScale+d);}
 
 function applyUIScale(){
-  // ปรับขนาด touch controls
+  // ── ปุ่มควบคุมในเกม ──
   const jz=document.getElementById('jzone');
   if(jz){jz.style.width=(110*uiScale)+'px';jz.style.height=(110*uiScale)+'px';}
   const ab=document.getElementById('abtns');
   if(ab){ab.style.transform=`scale(${uiScale})`;ab.style.transformOrigin='bottom right';}
   const dp=document.getElementById('dpad-ui');
   if(dp){dp.style.transform=`scale(${uiScale})`;dp.style.transformOrigin='bottom left';}
-  // ปรับ wbar
+  // ── Weapon bar ──
   const wbar=document.getElementById('wbar');
-  if(wbar){wbar.style.transform=`scale(${uiScale})`;wbar.style.transformOrigin='top left';
-    wbar.style.height=(52*uiScale)+'px';}
+  if(wbar){wbar.style.transform=`scale(${uiScale})`;wbar.style.transformOrigin='top left';wbar.style.height=(52*uiScale)+'px';}
   // อัปเดต slider และ display
   const slider=document.getElementById('ui-scale-slider');
   if(slider)slider.value=uiScale;
@@ -878,8 +932,10 @@ function doReset(e){
   localStorage.removeItem(XP_KEY);
   localStorage.removeItem(SKIN_KEY);
   localStorage.removeItem(SKIN_EQUIP_KEY);
+  localStorage.removeItem(MENU_SCALE_KEY);
   gems=0;ownedWeapons=[0];selWeapon=0;totalXP=0;
   ownedSkins=['default'];equippedSkin='default';
+  menuScale=1.0;applyMenuScale();
   updateXPHUD();
   updateGemsHUD();
   updateWeaponBar();
